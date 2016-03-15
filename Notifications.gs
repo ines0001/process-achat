@@ -97,6 +97,28 @@ function MailingTo(id,statut,commentaire,mail_to, mail_cc, option){
                             zoneAction += '</p>';
                             zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
                             break;
+    case state.invalideeNiv0 : // Alimentation des donnees du template email
+                            copyData2Form(html, statut, Session.getActiveUser().getEmail());
+                            // Definition de la zone d'action de l'email
+                            zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
+                            zoneAction += '<div style="text-decoration:none;-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;padding: 15px;margin-bottom: 20px;border: 1px solid transparent;border-radius: 4px;color: #a94442;background-color: #f2dede;border-color: #ebccd1;margin-right: 15px;margin-left: 15px;"><b>&#9432;</b>&nbsp;Demande refusée par '+html.acteurcourant;
+                            zoneAction += ' <p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">Motif du refus : '+commentaire.nl2br()+'</p>';
+                            zoneAction += '</div>';
+                            break;
+    case state.valideeNiv0 : // Alimentation des donnees du template email
+                            copyData2Form(html, statut, Session.getActiveUser().getEmail());
+                            // Definition de l'url de l'action et de la zone d'action de l'email
+                            url = (option)?getProcessAchatUrl()+'?page='+getParamPageByStatus(state.valideeNiv0).status+'&ref='+id:'#';
+                            url = encodeURI(url);
+                            libelleBtn = 'Je traite la demande d\'achat';
+                            zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">Commentaire attaché à la demande : '+commentaire.nl2br()+'</p>';
+                            zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">';
+                            zoneAction += ' <div class="text-center" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;text-align: center;color: #505050;font-family: Arial;font-size: 14px;line-height: 150%;">';
+                            zoneAction += '  <a href="'+url+'" class="btn btn-outline btn-md" style="text-decoration: none;-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;background-color: transparent;color: #336699;display: inline-block;padding: 6px 12px;margin-bottom: 0;font-size: 14px;font-weight: normal;line-height: 1.42857143;text-align: center;white-space: nowrap;vertical-align: middle;-ms-touch-action: manipulation;touch-action: manipulation;cursor: pointer;-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;background-image: none;border: 1px solid transparent;border-radius: 4px;border-color: #563d7c;">'+libelleBtn+'</a>';
+                            zoneAction += ' </div>';
+                            zoneAction += '</p>';
+                            zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
+                            break;
     case state.invalideeNiv1 : // Alimentation des donnees du template email
                             copyData2Form(html, statut, Session.getActiveUser().getEmail());
                             // Definition de la zone d'action de l'email
@@ -168,8 +190,50 @@ function MailingTo(id,statut,commentaire,mail_to, mail_cc, option){
                             copyData2Form(html, statut, Session.getActiveUser().getEmail());
                             // Si type de demande = Interne Alors SendBDC sinon EditAPP 
                             ctypedde = getInfoDA(id).codetypedemande
-                            if ((ctypedde != null) && (ctypedde != 'INT')) {
+                            // Evolution #2
+                            
+                            /*if ((ctypedde != null) && (ctypedde != 'INT')) {
                               url = (option)?getProcessAchatUrl()+'?page='+getParamPageByStatus(state.valideeNiv3).status+'&ref='+id:'#';
+                              url = encodeURI(url);
+                              libelleBtn = 'Je saisis le bon de commande dans APP';
+                              zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">Commentaire attaché à la demande : '+commentaire.nl2br()+'</p>';
+                              zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">';
+                              zoneAction += ' <div class="text-center" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;text-align: center;color: #505050;font-family: Arial;font-size: 14px;line-height: 150%;">';
+                              zoneAction += '  <a href="'+url+'" class="btn btn-outline btn-md" style="text-decoration: none;-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;background-color: transparent;color: #336699;display: inline-block;padding: 6px 12px;margin-bottom: 0;font-size: 14px;font-weight: normal;line-height: 1.42857143;text-align: center;white-space: nowrap;vertical-align: middle;-ms-touch-action: manipulation;touch-action: manipulation;cursor: pointer;-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;background-image: none;border: 1px solid transparent;border-radius: 4px;border-color: #563d7c;">'+libelleBtn+'</a>';
+                              zoneAction += ' </div>';
+                              zoneAction += '</p>';
+                              zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
+                            } else {
+                              url = (option)?getProcessAchatUrl()+'?page='+getParamPageByStatus(state.appMisAJour).status+'&ref='+id:'#';
+                              url = encodeURI(url);
+                              libelleBtn = 'Je transmets le bon de commande au fournisseur';
+                              zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">Commentaire attaché à la demande : '+commentaire.nl2br()+'</p>';
+                              zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">';
+                              zoneAction += ' <div class="text-center" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;text-align: center;color: #505050;font-family: Arial;font-size: 14px;line-height: 150%;">';
+                              zoneAction += '  <a href="'+url+'" class="btn btn-outline btn-md" style="text-decoration: none;-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;background-color: transparent;color: #336699;display: inline-block;padding: 6px 12px;margin-bottom: 0;font-size: 14px;font-weight: normal;line-height: 1.42857143;text-align: center;white-space: nowrap;vertical-align: middle;-ms-touch-action: manipulation;touch-action: manipulation;cursor: pointer;-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;background-image: none;border: 1px solid transparent;border-radius: 4px;border-color: #563d7c;">'+libelleBtn+'</a>';
+                              zoneAction += ' </div>';
+                              zoneAction += '</p>';
+                              zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
+                            }*/
+                            url = (option)?getProcessAchatUrl()+'?page='+getParamPageByStatus(state.valideeNiv3).status+'&ref='+id:'#';
+                            url = encodeURI(url);
+                            libelleBtn = 'Je valide la diffusion du bon de commande au fournisseur';
+                            zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">Commentaire attaché à la demande : '+commentaire.nl2br()+'</p>';
+                            zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">';
+                            zoneAction += ' <div class="text-center" style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;text-align: center;color: #505050;font-family: Arial;font-size: 14px;line-height: 150%;">';
+                            zoneAction += '  <a href="'+url+'" class="btn btn-outline btn-md" style="text-decoration: none;-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;background-color: transparent;color: #336699;display: inline-block;padding: 6px 12px;margin-bottom: 0;font-size: 14px;font-weight: normal;line-height: 1.42857143;text-align: center;white-space: nowrap;vertical-align: middle;-ms-touch-action: manipulation;touch-action: manipulation;cursor: pointer;-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;background-image: none;border: 1px solid transparent;border-radius: 4px;border-color: #563d7c;">'+libelleBtn+'</a>';
+                            zoneAction += ' </div>';
+                            zoneAction += '</p>';
+                            zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
+                            // Evolution #2
+                            break;
+    // Evolution #2
+    case state.valideeDiffusion : // Alimentation des donnees du template email
+                            copyData2Form(html, statut, Session.getActiveUser().getEmail());
+                            // Si type de demande = Interne Alors SendBDC sinon EditAPP 
+                            ctypedde = getInfoDA(id).codetypedemande
+                            if ((ctypedde != null) && (ctypedde != 'INT')) {
+                              url = (option)?getProcessAchatUrl()+'?page='+getParamPageByStatus(state.valideeNivDiffusion).status+'&ref='+id:'#';
                               url = encodeURI(url);
                               libelleBtn = 'Je saisis le bon de commande dans APP';
                               zoneAction += '<p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">Commentaire attaché à la demande : '+commentaire.nl2br()+'</p>';
@@ -192,6 +256,15 @@ function MailingTo(id,statut,commentaire,mail_to, mail_cc, option){
                               zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
                             }
                             break;
+    case state.invalideeDiffusion : // Alimentation des donnees du template email
+                            copyData2Form(html, statut, Session.getActiveUser().getEmail());
+                            // Definition de la zone d'action de l'email
+                            zoneAction += '<br style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;">';
+                            zoneAction += '<div style="text-decoration:none;-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;padding: 15px;margin-bottom: 20px;border: 1px solid transparent;border-radius: 4px;color: #a94442;background-color: #f2dede;border-color: #ebccd1;margin-right: 15px;margin-left: 15px;"><b>&#9432;</b>&nbsp;Demande refusée par '+html.acteurcourant;
+                            zoneAction += ' <p style="-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;orphans: 3;widows: 3;margin: 0 0 10px;">Motif du refus : '+commentaire.nl2br()+'</p>';
+                            zoneAction += '</div>';
+                            break;
+    // Evolution #2
     case state.appMisAJour :// Alimentation des donnees du template email
                             copyData2Form(html, statut, Session.getActiveUser().getEmail());
                             // Definition de l'url d'action et de la zone d'action de l'email

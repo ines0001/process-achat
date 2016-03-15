@@ -18,6 +18,9 @@ function generationBDCpdf(numbdc) {
   var idfile;
   var dataInfoGenerationBDC;
   var mttAchat='';
+  // EVO-10
+  var txTVA=null;
+  // EVO-10
   
   try {
     // Generation d'une copie a partir du template du BDC SQLi dans le root du Drive de l'utilisateur courant
@@ -33,8 +36,26 @@ function generationBDCpdf(numbdc) {
     // Remplace les tag du template du BDC SQLi avec les donnees de la demande d'achat
     mttAchat = globalDAData.prixtjmachat*globalDAData.quantite;
     mttBrutHT = Utilities.formatString("%.2f", mttAchat);
-    mttTva = Utilities.formatString("%.2f", mttAchat*(dataInfoGenerationBDC[1]/100));
-    mttTotalTTC = Utilities.formatString("%.2f", mttAchat+(mttAchat*(dataInfoGenerationBDC[1]/100)));
+    // EVO-10
+    txTVA = globalDAData.tva;
+    if (txTVA == '') {
+      txTVA = dataInfoGenerationBDC[1]/100;
+    } else {
+      txTVA = txTVA.replace(",",".");
+    }
+    // EVO-10
+    
+    // EVO-10
+    //mttTva = Utilities.formatString("%.2f", mttAchat*(dataInfoGenerationBDC[1]/100));
+    //mttTotalTTC = Utilities.formatString("%.2f", mttAchat+(mttAchat*(dataInfoGenerationBDC[1]/100)));
+    if (IsNumeric(txTVA)) {
+      mttTva = Utilities.formatString("%.2f", mttAchat*(txTVA/100));
+      mttTotalTTC = Utilities.formatString("%.2f", mttAchat+(mttAchat*(txTVA/100)));
+    } else {
+      mttTva = "/";
+      mttTotalTTC = mttBrutHT;
+    }
+    // EVO-10
     prxunitachat = Utilities.formatString("%.2f", globalDAData.prixtjmachat);
     dtDebLiv = globalDAData.datedebutlivraison;
     dtFinLiv = globalDAData.datefinlivraison;
@@ -63,9 +84,20 @@ function generationBDCpdf(numbdc) {
     copyBody.replaceText('%%TAG_PRIXUNIHT%%', prxunitachat + " €");
     copyBody.replaceText('%%TAG_QTE%%',globalDAData.quantite);
     copyBody.replaceText('%%TAG_MTTBRUTHT%%',mttBrutHT+" €");
-    copyBody.replaceText('%%TAG_TVA%%',dataInfoGenerationBDC[1]+"%");
-    copyBody.replaceText('%%TAG_MTTTVA%%',mttTva+" €");
-    copyBody.replaceText('%%TAG_MTTTOTALTTC%%',mttTotalTTC+" €");
+    // EVO-10
+    //copyBody.replaceText('%%TAG_TVA%%',dataInfoGenerationBDC[1]+"%");
+    //copyBody.replaceText('%%TAG_MTTTVA%%',mttTva+" €");
+    //copyBody.replaceText('%%TAG_MTTTOTALTTC%%',mttTotalTTC+" €");
+    if (IsNumeric(txTVA)) {
+      copyBody.replaceText('%%TAG_TVA%%',txTVA+"%");
+      copyBody.replaceText('%%TAG_MTTTVA%%',mttTva+" €");
+      copyBody.replaceText('%%TAG_MTTTOTALTTC%%',mttTotalTTC+" €");
+    } else {
+      copyBody.replaceText('%%TAG_TVA%%',LIB_BDC_PASDETVA);
+      copyBody.replaceText('%%TAG_MTTTVA%%',mttTva);
+      copyBody.replaceText('%%TAG_MTTTOTALTTC%%',mttTotalTTC+" €");
+    }
+    // EVO-10
     copyBody.replaceText('%%TAG_ADRESSELIVRAISON%%',globalDAData.adresselivraison);
     copyBody.replaceText('%%TAG_CONDITIONREGLEMENT%%',globalDAData.conditionreglement);
     copyBody.replaceText('%%TAG_LIEUBDC%%',dataInfoGenerationBDC[2]);
@@ -104,6 +136,9 @@ function generationFicheDApdf(values, commentaire) {
   var idfile;
   var dt = new Date();
   var dtGeneration='';
+  // EVO-10
+  var txTVA;
+  // EVO-10
   
   try {
     // Generation d'une copie a partir du template du DA SQLi dans le root du Drive de l'utilisateur courant
@@ -160,6 +195,23 @@ function generationFicheDApdf(values, commentaire) {
     copyBody.replaceText('%%TAG_TJMPXACHAT%%', prxunitachat + " €");
     copyBody.replaceText('%%TAG_TJMPXVENDU%%',prxunitvendu+" €");
     copyBody.replaceText('%%TAG_MARGE%%',marge+" %");
+    // EVO-10
+    txTVA = values.tva;
+    if (txTVA == '') {
+      var dataInfoGenerationBDC = GetInfoGenerationBDC().split(",");
+      txTVA = dataInfoGenerationBDC[1];
+    } else {
+      txTVA = String(txTVA).replace(",",".");
+    }
+    if (IsNumeric(txTVA)) {
+      copyBody.replaceText('%%TAG_TVA%%',txTVA+" %");
+    } else {
+      copyBody.replaceText('%%TAG_TVA%%',LIB_BDC_PASDETVA);
+    }
+    // EVO-10
+    // EVO-23
+    copyBody.replaceText('%%TAG_CONDREG%%',values.conditionreglement);
+    // EVO-23
 
     copyBody.replaceText('%%TAG_IDTCOLLAB%%', values.collaborateur);
     

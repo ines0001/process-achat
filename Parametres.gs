@@ -119,6 +119,10 @@ var COLUMN_CONDITION_REGL = 'ConditionDeReglement';
 var COLUMN_INFORMATION_CREATION_FOURNISSEUR = 'Email Creation Fournisseur';
 // Nom de la colonne contenant les informations de parametrage necessaire a la generation du BDC
 var COLUMN_INFORMATION_GENERATION_BDC = 'Informations BDC';
+// EVO-10
+// Nom de la colonne contenant la liste des taux de TVA
+var COLUMN_TVA = 'TauxDeTVA';
+// EVO-10
 
 //*********************************************************************************************
 // Nom des colonnes de l'onglet Suivi DA
@@ -178,38 +182,40 @@ var COLUMN_DA_DTFINLIV = 20;
 var COLUMN_DA_ADRLIV = 21;
 // Index de la colonne Condition de reglement d'une demande d'achat
 var COLUMN_DA_CONDREGL = 22;
+// Index de la colonne TVA d'une demande d'achat
+var COLUMN_DA_TVA = 23;
 // Index de la colonne URL Drive Google d'une demande d'achat
-var COLUMN_DA_URLDA = 23;
+var COLUMN_DA_URLDA = 28;
 // Index de la colonne URL DEVIS d'une demande d'achat
-var COLUMN_DA_DEVIS = 24;
+var COLUMN_DA_DEVIS = 29;
 // Index de la colonne URL BDC au format PDF d'une demande d'achat
-var COLUMN_DA_BDCPDF = 25;
+var COLUMN_DA_BDCPDF = 30;
 // Index de la colonne URL BDC signe d'une demande d'achat
-var COLUMN_DA_BDCPDFSIGNE = 26;
+var COLUMN_DA_BDCPDFSIGNE = 31;
 // Index de la colonne URL Facture
-var COLUMN_DA_FACTURE = 27;
+var COLUMN_DA_FACTURE = 32;
 // Index de la colonne URL BPF
-var COLUMN_DA_BPF = 28;
+var COLUMN_DA_BPF = 33;
 // Index de la colonne URL Fiche DA
-var COLUMN_DA_FICHE = 29;
+var COLUMN_DA_FICHE = 34;
 // Index de la colonne Historique (Fonctionnalite Historique des operations)
-var COLUMN_DA_HISTORIQUE = 30;
+var COLUMN_DA_HISTORIQUE = 35;
 // Index de la colonne IsValidationNvi2
-var COLUMN_DA_ISVALIDENIV2 = 31;
+var COLUMN_DA_ISVALIDENIV2 = 36;
 // Index de la colonne Acces Unit (Fonctionnalite Dashboard)
-var COLUMN_DA_ACCES_UNIT = 32;
+var COLUMN_DA_ACCES_UNIT = 37;
 // Index de la colonne Acces Entreprise (Fonctionnalite Dashboard)
-var COLUMN_DA_ACCES_ENTREPRISE = 33;
+var COLUMN_DA_ACCES_ENTREPRISE = 38;
 // Index de la colonne Acces Compta Fournisseur (Fonctionnalite Dashboard)
-var COLUMN_DA_ACCES_COMPTAFOUR = 34;
+var COLUMN_DA_ACCES_COMPTAFOUR = 39;
 // Index de la colonne Acces Assistante (Fonctionnalite Dashboard)
-var COLUMN_DA_ACCES_ASSISTANTE = 35;
+var COLUMN_DA_ACCES_ASSISTANTE = 40;
 // Index de la colonne Qtite x Prix achat(Fonctionnalite Dashboard)
-var COLUMN_DA_MONTANT_ACHAT = 36;
+var COLUMN_DA_MONTANT_ACHAT = 41;
 // Index de la colonne Resume DA (Fonctionnalite Dashboard)
-var COLUMN_DA_RESUME = 37;
+var COLUMN_DA_RESUME = 42;
 // Index de la colonne Updated (Fonction de batch)
-var COLUMN_DA_UPADTED = 38;
+var COLUMN_DA_UPADTED = 43;
 
 //*********************************************************************************************
 // Numero des colonnes Fournisseur dans l'onglet Fournisseurs
@@ -243,8 +249,25 @@ var EMAIL_CC=(function () {var params = SpreadsheetApp.openById(CLSID).getSheetB
                            for( var i=0;i< params[0].length;i++){if(params[0][i]==COLUMN_CC ) return params[1][i];}
                            return null;})();
 
+// Libelle Condition de reglement de l'emetteur
+// Evolution EVO-21
+var LIB_COND_REG_EMETTEUR = "<i>Conditions de règlement demandées par l'émetteur : </i>";
+// Evolution EVO-21
+// Libelle TVA de l'emetteur
+// Evolution EVO-10
+var LIB_COND_TVA_EMETTEUR = "<i>TVA saisie par l'émetteur : </i>";
+var LIB_BDC_PASDETVA = "T.V.A. non applicable";
+// Evolution EVO-10
+
+// S.VIOT Google Analytics
+var strActionName;
+// S.VIOT Google Analytics
+
 // Sujet des emails envoys
 var SUBJECT ='[ACHAT] : %%id%% - %%fournisseur%% - %%buimputation%% - %%statut%%';
+// Evolution EVO-20
+var SUBJECT_REPORT1 = "[ACHAT] : SLA Traitement d'une demande d'achat > 7 j";
+// Evolution EVO-20
 
 //*********************************************************************************************
 // Regroupement Avancement
@@ -254,6 +277,9 @@ var REGROUPEMENT_DIRECTION = "Validation Direction Entreprise";
 var REGROUPEMENT_COMPTA = "Génération Comptabilité Fournisseur";
 var REGROUPEMENT_ASSISTANTE = "Gestion Assistante";
 var REGROUPEMENT_CLOS = "Clos";
+// Evolution #2
+var REGROUPEMENT_EMETTEUR = "Emetteur";
+// Evolution #2
 
 //*********************************************************************************************
 // Formule de concatenation de l'historique d'une DA (pour la fonctionnalite Historique des operations)
@@ -280,3 +306,7 @@ var BATCH_GENERATION_FICHE_DA = "GENERATION FICHE DA";
 var BATCH_GENERATION_AUTORISATION_REP_PRINCIPAL = "AFFECTATION DROIT SUR LE REPERTOIRE GOOGLE DRIVE DA";
 var BATCH_NIVEAU_INFORMATION = "INFO";
 var BATCH_NIVEAU_ERROR = "ERROR";
+// Evolution EVO-20
+var BATCH_STAT_DUREE_TRAITEMENT = "STATISTIQUE DUREE TRAITEMENT"
+var DELAI_TRAITEMENT_MAX = 7
+// Evolution EVO-20

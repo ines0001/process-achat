@@ -50,12 +50,9 @@
       </a>
     </div>
     <p class="navbar-text"><?=Session.getActiveUser().getEmail()?></p>
-    <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
-    
-      <span class="navbar-brand navbar-nav navbar-right">Formulaire de suivi d'une demande d'achat : <b>GESTION COMPTABILITE FOURNISSEUR</b></span>
-    
-    </div><!-- /.navbar-collapse -->
+      <span class="navbar-brand navbar-nav navbar-right">Formulaire de suivi d'une demande d'achat : <b>ASSISTANTES SQLI ENTREPRISE</b></span>
+    </div>
   </div>
 </div>
 <div class="container">  
@@ -75,20 +72,29 @@
                   <div class="col-md-4" data-val="true">
                    <div class="thumbnail">
                     <div class="caption">
-                     <span class="glyphicon glyphicon glyphicon-pencil" aria-hidden="true" style="font-size: 2em;"></span>
-                     <p class="text-uppercase" align="center">Je génére le bon de commande provisoire</p>
-                     <p class="text-center"><input    data-val-required="The IsMyUnit field is required." id="IsMyUnit" name="A" type="checkbox" value="True"></p>
+                     <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true" style="font-size: 2em;"></span>
+                     <p class="text-uppercase" align="center">Je valide</p>
+                     <p class="text-center"><input    data-val-required="The IsMyUnit field is required." id="IsMyUnit" name="A" type="radio" value="True"></p>
+                    </div>
+                   </div>
+                  </div>
+                  <div class="col-md-4" data-val="false">
+                   <div class="thumbnail ">
+                    <div class="caption">
+                     <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true" style="font-size: 2em;"></span>
+                     <p class="text-uppercase" align="center">Je ne valide pas</p>
+                     <p class="text-center"><input   data-val-required="The IsMyUnit field is required." id="IsMyUnit" name="A" type="radio" value="False"></p>
                     </div>
                    </div>
                   </div>
               </div>
           </div> <!-- End class class="col-md-offset-2 col-md-8" -->
-       </div> <!-- End row -->
+       </div>  <!-- End row -->
        <div class="row ">
           <div class="col-md-offset-2 col-md-8">       
-              <!-------------------------------------------------->
-              <!-- Generation n° BDC : Comptabilite Fournisseur -->
-              <!-------------------------------------------------->
+              <!------------------------------------>
+              <!-- Validation Niv 0 : Assistante -->
+              <!------------------------------------>
               <form id="form_true" class="form-horizontal" style="display:none"  > <!--form-horizontal-->   
                  <div class="form-group" style="display:none">
                    <label class="col-sm-3 control-label">Identifiant</label>
@@ -96,29 +102,11 @@
                        <input id="identifiant" class="form-control" type="text" value="<?=ref?>" style="display:none" readonly>
                    </div>
                  </div>
-                 <div class="form-group">
-                   <label for="commentaire" class="col-sm-4 control-label">*N° du BDC</label>
-                   <div class="col-md-6">
-                     <input id="idbdc" name="" class="form-control" placeholder="000000000" type="text" required pattern="(?:\d*)">
-                     <small id="infobdc" class="help-block " style="display:none"><a class="panel-red">Saisir le numéro du bon de commande associé à la demande d'achat</a></small>
-                   </div>
-                 </div>
-                 <div class="form-group">
-                   <label for="lbltva" class="col-sm-4 control-label">*TVA</label>
-                   <div class="col-md-6">
-                     <select id="tva" class="form-control" required>
-                     </select>
-                     <small id="infotva" class="help-block " style="display:none"><a class="panel-red">Sélectionner la TVA correspondante</a></small>
-                     <span id="tvaemetteur"></span>
-                   </div>
-                 </div>
-                 <div class="form-group">
-                   <label for="lblconditionreglement" class="col-sm-4 control-label">*Conditions de règlement</label>
-                   <div class="col-md-6">
-                     <select id="conditionreglement" class="form-control" required>
-                     </select>
-                     <small id="infoconditionreglement" class="help-block " style="display:none"><a class="panel-red">Sélectionner les conditions de règlement correspondantes</a></small>
-                     <span id="conditionreglementemetteur"></span>
+                  <div class="form-group">
+                   <label for="commentaire" class="col-sm-3 control-label">Votre message</label>
+                   <div class="col-md-9">
+                      <textarea id="commentaire_manager_ok" type="textarea" class="form-control" rows="7" ></textarea>
+                      <small class="help-block">Texte du mail qui sera envoyé aux acteurs de la demande</small>
                    </div>
                  </div>
                 <div class="clearfix form-group">
@@ -126,7 +114,30 @@
                     <button id="btn_val" class="pull-left btn btn-primary" type="submit">Valider</button>
                  </section>
                 </div>
-              </form> <!---- Generation n° BDC : Comptabilite Fournisseur -->
+              </form> <!---- Validation Niv 0 : Assistante -->
+              <!-------------------------------------->
+              <!-- Invalidation Niv 0 : Assistante -->
+              <!-------------------------------------->
+             <form id="form_false" class="form-horizontal" style="display:none"  > <!--form-horizontal-->
+             <div class="form-group" style="display:none">
+                   <label class="col-sm-3 control-label">Identifiant</label>
+                   <div class="col-md-9">
+                       <input id="identifiant" class="form-control" type="text" value="<?=ref?>" style="display:none" readonly>
+                   </div>
+                 </div>
+                  <div class="form-group">
+                   <label for="commentaire" class="col-sm-3 control-label">Le motif du refus</label>
+                   <div class="col-md-9">
+                      <textarea id="commentaire_manager_ko" type="textarea" class="form-control" rows="7" required></textarea>
+                      <small class="help-block">Texte du mail qui sera envoyé aux acteurs de la demande</small>
+                   </div>
+                 </div>
+                <div class="clearfix form-group">
+                 <section class="col-md-offset-3 col-md-9">
+                    <button id="btn_val" class="pull-left btn btn-primary" type="submit">Valider</button>
+                 </section>
+                </div>
+             </form> <!---- Invalidation Niv 0 : Assistante -->
          </div> <!-- div col-md-offset-2 col-md-8 -->
        </div> <!-- div row -->
 <div> <!-- End Container -->
@@ -140,23 +151,7 @@
 <?!= HtmlService.createTemplateFromFile('jQueryFunctions').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
 <script>
 $(function(){
-console.log('Ready!:%s',$('#select_response').data('param_type'));
-//******************************************************************************************************
-// Alimentation LD Condition de reglement
-//******************************************************************************************************
-google.script.run
-       .withSuccessHandler(function(html){$('select#conditionreglement').html(html);$('select#conditionreglement').prop( "selectedIndex", -1);})
-       .withFailureHandler(function(message){$("#conditionreglement").html(message);})
-       .getHtml_ConditionReglement();
-
-//******************************************************************************************************
-// Alimentation LD TVA
-//******************************************************************************************************
-google.script.run
-       .withSuccessHandler(function(html){$('select#tva').html(html);$('select#tva').prop( "selectedIndex", -1);})
-       .withFailureHandler(function(message){$("#tva").html(message);})
-       .getHtml_TauxDeTVABDC();
-       
+console.log('Ready!');
 //******************************************************************************************************
 // Affiche les donnees de la balise H2 (ID + Fournisseur)
 // Affiche la zone de message + la zone de choix d'action
@@ -165,17 +160,39 @@ google.script.run
 google.script.run
      .withSuccessHandler(function(values){
                            $('.jumbotron h2').html(values.id + ' / ' + values.fournisseur);
-                           $('.jumbotron b#emetteur').html(values.managerEntrepriseParis);
-                           $('#conditionreglementemetteur').html(values.conditionreglementemetteur);
-                           $('#tvaemetteur').html(values.tvaemetteur);
+                           $('.jumbotron b#emetteur').html(values.emetteur);
                            $('.jumbotron').show();
                            $('#select_response').show();
                            })
      .withFailureHandler(function(e){$('.jumbotron').hide();$('#error').html('<h1>Erreur!</h1><br>'+e);$('#error').show();})
      .getInfoDA( <?=ref?> );
-
 //******************************************************************************************************
-// Submit de la Generation n° BDC   
+// Submit de l'invalidation Niv 0   
+//******************************************************************************************************
+$("#form_false").on('submit',function(){ 
+  var message='';
+  // Masquer les zones d'affichage      
+  $('.jumbotron').hide();
+  $('#select_response').hide();
+  $(this).hide();
+  // Message En attente
+  $('#wait').modal({
+               keyboard: false,
+               backdrop: false
+  });
+  // Execution du traitement d'invalidation Niv 1 de la demande d'achat            
+  google.script.run
+       .withSuccessHandler(function(value){
+             $('#wait').hide();
+             $('#success').html(value.message).show();         
+         })
+       .withFailureHandler(function(e){$('#wait').hide();$('#error').html('<h1>Warning!</h1>'+e);$('#error').show();})
+       .onInvalidateNiv0(this);
+  return false;
+});
+         
+//******************************************************************************************************
+// Submit de la validation Niv 0   
 //******************************************************************************************************
 $("#form_true").on('submit',function(){ 
   var message='';
@@ -188,15 +205,16 @@ $("#form_true").on('submit',function(){
                keyboard: false,
                backdrop: false
   });
-  // Execution du traitement Generation n° BDC de la demande d'achat            
+  // Execution du traitement Validation Niv 1 de la demande d'achat            
   google.script.run
          .withSuccessHandler(function(value){
              $('#wait').hide();
              $('#success').html(value.message).show();
          })
          .withFailureHandler(function(e){$('#wait').hide();$('#error').html('<h1>Warning!</h1>'+e);$('#error').show();})
-         .onGenerationBDC(this);
+         .onValidateNiv0(this);
   return false;
 });
+
 });
 </script>

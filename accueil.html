@@ -122,6 +122,7 @@ body{
 </style>
 <body>
 <?!=HtmlService.createHtmlOutputFromFile('contact').getContent(); ?>
+<?!=HtmlService.createHtmlOutputFromFile('wait').getContent(); ?>
 <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -190,6 +191,25 @@ body{
         </a>
       </div>
     </div>
+    <!-- EVO-13 -->
+    <? if (isAdminSuivi() == true) { ?>
+    <br>
+    <div class="row">
+      <div class="col-md-offset-2 col-md-9">
+         <a href="#" id="exportxls">
+          <div style="background-color: lightgrey; ">
+            <span class="glyphicon glyphicon-export" style="font-size:10em" aria-hidden="true"></span>
+            <span class="text_link">
+              <h1><b>Exporter les données Process'Achat</b></h1>
+              Destiné aux administrateurs, cette fonction permet de recevoir par email le contenu des données Process'Achat au format Excel.
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+    <br>
+    <? } ?>
+    <!-- EVO-13 -->
   </div> 
 </body>
 <!-- Latest compiled and minified JavaScript -->
@@ -201,7 +221,27 @@ body{
 $(function(){
 console.log('Acceuil Ready!');
 
-$('.ticker').css('padding-right',$('.ticker-wrap').parent().width())
+// EVO-13
+$("#exportxls").on('click',function(){ 
+  var message='';
+  // Masquer les zones d'affichage      
+  // Message En attente
+  $('#wait').modal({
+               keyboard: false,
+               backdrop: false
+  });
+  // Execution du traitement d'invalidation Niv 1 de la demande d'achat            
+  google.script.run
+       .withSuccessHandler(function(value){
+             $('#wait').hide();
+         })
+       .withFailureHandler(function(e){$('#wait').hide();})
+       .getGoogleSpreadsheetAsExcel();
+  return true;
+});
+// EVO-13
+
+/*$('.ticker').css('padding-right',$('.ticker-wrap').parent().width())
 
 google.script.run.withSuccessHandler(function(values){
                     var out='';
@@ -211,7 +251,7 @@ google.script.run.withSuccessHandler(function(values){
                   .withFailureHandler(function(e){
                     console.log('Exception'+e.message);     
                   })
-                  .enumParams('Informations accueil');
+                  .enumParams('Informations accueil');*/
 
 });
 

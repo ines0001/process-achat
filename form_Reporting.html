@@ -22,6 +22,7 @@
   }
 </style>
 <body>
+<?!=HtmlService.createHtmlOutputFromFile('wait').getContent(); ?>
   <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="navbar-header">
       <a class="" href="<?=ScriptApp.getService().getUrl()?>">
@@ -31,7 +32,7 @@
     <p class="navbar-brand navbar-nav navbar-view"><span id="symbol_admin"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></span>&nbsp;<?=Session.getActiveUser().getEmail()?>&nbsp;<span id="connecting"></span></p>
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
-      <span class="navbar-right timeline-badge info"><i class="glyphicon glyphicon-check"></i></span>
+      <!--<span class="navbar-right timeline-badge info"><i class="glyphicon glyphicon-check"></i></span>-->
       <span class="navbar-brand navbar-nav navbar-right"><span class="navbar-view">Formulaire de suivi d'une demande d'achat : </span><b>REPORTING</b></span> 
     </div><!-- /.navbar-collapse -->
   </div>
@@ -99,7 +100,7 @@
  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script>
 
-$('.ticker').css('padding-right',$('.ticker-wrap').parent().width())
+/*$('.ticker').css('padding-right',$('.ticker-wrap').parent().width())
 
 google.script.run.withSuccessHandler(function(values){
                     var out='';
@@ -109,7 +110,7 @@ google.script.run.withSuccessHandler(function(values){
                   .withFailureHandler(function(e){
                     console.log('Exception'+e.message);     
                   })
-                  .enumParams('Informations accueil');
+                  .enumParams('Informations accueil');*/
 
 //******************************************************************************************************
 // Chargement de l'API Visualization et package Table
@@ -121,6 +122,11 @@ google.load("visualization", "1.1", {packages:['table']});
 //******************************************************************************************************
 function drawTableByPanel() {
      var opts = {sendMethod: 'auto'}, set_query, query;
+     // Fenetre d'attente : ON
+     $('#wait').modal({
+               keyboard: false,
+               backdrop: false
+     });                     
      google.script.run
                 .withSuccessHandler(function(isAdmin){ 
                    console.log('admins:'+isAdmin)
@@ -129,7 +135,7 @@ function drawTableByPanel() {
                      $('#connecting').html('#admin');
                    }
                    google.script.run
-                     .withSuccessHandler(function(values){ 
+                     .withSuccessHandler(function(values){
                         var filter='.*';
                         if(!isAdmin) filter += <?=Session.getActiveUser().getEmail()?>+'.*';
                         for (var i=0; i < 3; i++) {
@@ -146,7 +152,7 @@ function drawTableByPanel() {
                           }
                         }
                      })
-                     .withFailureHandler(function(e){console.log('Exception'+e.message)})
+                     .withFailureHandler(function(e){console.log('Exception'+e.message);})
                      .enumParams('Reporting Request');
                 })
                 .withFailureHandler(function(e){
@@ -199,10 +205,12 @@ function handleQueryTable(data, idonglet, titre, nameIdtable, nameNum) {
       /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
       Recherche des positions des colonnes
       /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
-      var i_historic; 
+      var i_historic;
+      var i_managerBU;
       for(var i=0;i<data.getNumberOfColumns();i++){
         
         if(data.getColumnLabel(i).toLowerCase()=='historique') i_historic = i;
+        if(data.getColumnLabel(i).toLowerCase()=='accès unit') i_managerBU = i;
         
       }
       /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -262,10 +270,27 @@ function handleQueryTable(data, idonglet, titre, nameIdtable, nameNum) {
         statutDde = data.getValue(i,idColonneEtat);
         switch(statutDde) {
         case "INITIALISE" :                         html_action+= values2.initialise_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
-                                                    html_avancement = values2.initialise_2;
+                                                    // EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
+                                                    //html_avancement = values2.initialise_2;
+                                                    html_avancement = (values2.initialise_2).replace('%LSTACT%',data.getValue(i,i_managerBU).replace(',','&#13').replace(',','&#13'));
+                                                    // EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
                                                     break;
+        // Evolution #2
+        case "PRISE EN COMPTE NIV 0" :              html_action+= values2.priseEnCompteNiv0_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.priseEnCompteNiv0_2;
+                                                    break;
+        case "VALIDEE NIV 0" :                      html_action+= values2.valideeNiv0_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.valideeNiv0_2;
+                                                    break;
+        case "INVALIDEE NIV 0" :                    html_action+= values2.invalideeNiv0_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.invalideeNiv0_2;
+                                                    break;
+        // Evolution #2                                            
         case "PRISE EN COMPTE NIV 1" :              html_action+= values2.priseEnCompteNiv1_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
-                                                    html_avancement = values2.priseEnCompteNiv1_2;
+                                                    // EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
+                                                    //html_avancement = values2.priseEnCompteNiv1_2;
+                                                    html_avancement = (values2.priseEnCompteNiv1_2).replace('%LSTACT%',data.getValue(i,i_managerBU).replace(',','&#13').replace(',','&#13'));
+                                                    // EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
                                                     break;
         case "VALIDEE NIV 1" :                      // Test si la demande doit etre validee Niv 2
                                                     if (data.getValue(i,idColonneIsValidationNiv2) == 'O') {
@@ -296,14 +321,34 @@ function handleQueryTable(data, idonglet, titre, nameIdtable, nameNum) {
         case "BDC GENERE" :                         html_action+= values2.bdcGenere_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
                                                     html_avancement = values2.bdcGenere_2;
                                                     break;
-        case "VALIDEE NIV 3" :                      if (typeDemande == "Interne") {
-                                                      html_action+= values2.valideeNiv3_11.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
-                                                      html_avancement = values2.valideeNiv3_12;
+        case "VALIDEE NIV 3" :                      // Evolution #2
+													//if (typeDemande == "Interne") {
+                                                    //  html_action+= values2.valideeNiv3_11.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    //  html_avancement = values2.valideeNiv3_12;
+                                                    //} else {
+                                                    //  html_action+= values2.valideeNiv3_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    //  html_avancement = values2.valideeNiv3_2;
+                                                    //}
+                                                    html_action+= values2.valideeNiv3_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.valideeNiv3_2;
+                                                    // Evolution #2
+                                                    break;
+        // Evolution #2
+        case "PRISE EN COMPTE DIFFUSION" :          html_action+= values2.priseEnCompteNivDiffusion_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.priseEnCompteNivDiffusion_2;
+                                                    break;
+        case "INVALIDEE DIFFUSION" :                html_action+= values2.invalideeNivDiffusion_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.invalideeNivDiffusion_2;
+                                                    break;
+        case "VALIDEE DIFFUSION" :                  if (typeDemande == "Interne") {
+                                                      html_action+= values2.valideeNivDiffusion_11.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                      html_avancement = values2.valideeNivDiffusion_12;
                                                     } else {
-                                                      html_action+= values2.valideeNiv3_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
-                                                      html_avancement = values2.valideeNiv3_2;
+                                                      html_action+= values2.valideeNivDiffusion_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                      html_avancement = values2.valideeNivDiffusion_2;
                                                     }
                                                     break;
+        // Evolution #2
         case "INVALIDEE NIV 3" :                    html_action+= values2.invalideeNiv3_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
                                                     html_avancement = values2.invalideeNiv3_2;
                                                     break;
@@ -430,9 +475,9 @@ function handleQueryTable(data, idonglet, titre, nameIdtable, nameNum) {
       $('#'+nameIdtable+' .cssHeaderCell:contains("Actions")').css('width', '6%');
       $('.dropup').parents().css('overflow', 'visible');
       /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
-        ACTIVATION DU BTN REFRESH
+        Fenetre d'attente : OFF
       /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
-      //$("#btnrefresh").attr("disabled", false);
+      $('#wait').hide();
     })
     .withFailureHandler(function(e){console.log('Exception'+e.message)})
     // Recuperation de la liste generee d'actions en fonction du statut d'une demande
@@ -449,7 +494,7 @@ function handleQueryTableOng1(response) {
   // Recuperation des donnees de la requete
   var data = response.getDataTable();
   // Generation du tableau de donnees et des colonnes dediees
-  handleQueryTable(data, "R_EMISE",'Demande(s) initialisée(s)', 'id_table', '#num_init')
+  handleQueryTable(data, "R_EMISE",'Demande(s) initialisée(s)', 'id_table', '#num_init');
 }
 
 //******************************************************************************************************
@@ -534,9 +579,13 @@ $(function(){
   $('[data-toggle="tooltip"]').tooltip();
 });
 
+// EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+// EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
+
 $('#btnrefresh').on('click',function(){
-   // Bloque le btn Refresh pour eviter les boucles de refresh
-   //$("#btnrefresh").attr("disabled", true);
-   google.setOnLoadCallback(drawTableByPanel());
+  location.reload();
 });
 </script>

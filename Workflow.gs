@@ -1,4 +1,130 @@
 //******************************************************************************************************
+// Fonction execute lors que la demande passe au staut "Prise en compte Niv 0"
+// Actions realisees : creation d'une entree dans Historique DA + maj du statut dans Suivi DA
+//
+// [S] /
+//******************************************************************************************************
+// Evolution #2
+function onPECNiv0(id) {
+
+  try {
+    // Recuperation des donnees de la DA
+    getInfoDA(id);
+    // Recuperation de la liste des statuts d'une demande d'achat
+    var state=GetRowParams(COLUMN_STATE);
+    // Maj du statut PEC Niv 1 uniquement si la demande d'achat est initialisee
+    if (globalDAData.statut == state.initialise) {
+      // Creation d'une ligne d'historique
+      createHistoryLine(globalDAData.id, state.priseEnCompteNiv0, Session.getActiveUser().getEmail(), "","");
+      // Maj du statut de la demande d'achat
+      setDAData(globalDAData.id,COLUMN_DA_STATE,state.priseEnCompteNiv0);
+    }
+  } catch(e){
+    e = (typeof e === 'string') ? new Error(e) : e;
+    Log_Severe("onPECNiv0", Utilities.formatString("%s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
+    throw e;
+  }
+}
+
+//******************************************************************************************************
+// Fonction execute lors que la demande passe au staut "Invalidation Niv 0"
+// Actions realisees : creation d'une entree dans Historique DA + maj du statut dans Suivi DA + envoi
+// d'un email a l'emetteur de la demande
+//
+// [E] form : objet formulaire PEC Niv 0
+// [S] /
+//******************************************************************************************************
+// Evolution #2
+function onInvalidateNiv0(form){
+  var ret = null;
+  var mail_to="";
+  var mail_cc="";
+
+  try {
+    if(form===undefined ) throw 'null form';
+    if(form.identifiant=='' ) throw 'null form';
+    // Recuperation des donnees de la DA
+    getInfoDA(form.identifiant);
+    // Recuperation de la liste des statuts d'une demande d'achat
+    var state=GetRowParams(COLUMN_STATE);
+    // Action si le statut actuel est PEC
+    if(globalDAData.statut == state.priseEnCompteNiv0) {
+      // Creation d'une ligne d'historique
+      createHistoryLine(form.identifiant, state.invalideeNiv0, Session.getActiveUser().getEmail(), form.commentaire_manager_ko,"");
+      // Maj du statut de la demande d'achat
+      setDAData(form.identifiant,COLUMN_DA_STATE,state.invalideeNiv0);
+      // Emailing a l'emetteur de la demande
+      mail_to = globalDAData.emetteur;
+      mail_cc = "";
+      MailingTo(form.identifiant,state.invalideeNiv0,form.commentaire_manager_ko,mail_to, mail_cc,true)
+      // Retour de la fonction : emetteur de la demande
+      msg='<h1>Merci</h1>',
+      msg+='<p> Votre demande a bien été complétée et son traitement est en cours.</p>';
+      msg+='<p> Un mail vient d\'être  envoyé à <b>'+globalDAData.emetteur+'</b> (Emetteur de la demande).</p>';
+      msg+='<p>A bientôt,</p>';
+      ret = {message:msg};
+    } 
+    if(ret==null) throw "La demande d'achat n°<b>"+form.identifiant+"</b> a déjà été traitée.<br>A bientôt.";
+    return ret;
+  } catch(e){
+    e = (typeof e === 'string') ? new Error(e) : e;
+    Log_Severe("onInvalidateNiv1", Utilities.formatString("%s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
+    throw e;
+  }
+}
+
+//******************************************************************************************************
+// Fonction execute lors que la demande passe au staut "Validation Niv 0"
+// Actions realisees : creation d'une entree dans Historique DA + maj du statut dans Suivi DA + envoi
+// d'un email au Manageur de la BU
+//
+// [E] form : objet formulaire PEC Niv 0
+// [S] /
+//******************************************************************************************************
+// Evolution #2
+function onValidateNiv0(form){
+  var ret = null;
+  var msg="";
+  var mail_to="";
+  var mail_cc="";
+  var blnValNiv2 = false;
+
+  try {
+    if(form===undefined ) throw 'null form';
+    if(form.identifiant=='' ) throw 'null form';
+    // Recuperation des donnees de la DA
+    getInfoDA(form.identifiant);
+    // Recuperation de la liste des statuts d'une demande d'achat
+    var state=GetRowParams(COLUMN_STATE);
+    // Action si le statut actuel est PEC
+    if(globalDAData.statut == state.priseEnCompteNiv0) {
+      // Creation d'une ligne d'historique
+      createHistoryLine(form.identifiant, state.valideeNiv0, Session.getActiveUser().getEmail(), form.commentaire_manager_ok,"");
+      // Maj du statut de la demande d'achat
+      setDAData(form.identifiant,COLUMN_DA_STATE,state.valideeNiv0);
+      
+      // Emailing au Manageur de la BU
+      mail_to = globalDAData.managerBU;
+      mail_cc = globalDAData.emetteur;
+      MailingTo(form.identifiant,state.valideeNiv0,form.commentaire_manager_ok,mail_to,mail_cc,true)
+      // Retour de la fonction : message d'informations
+      msg='<h1>Merci</h1>',
+      msg+='<p> Votre demande a bien été complétée et son traitement est en cours.</p>';
+      msg+='<p> Un mail vient d\'être  envoyé à <b>'+globalDAData.managerBU+'</b> (Manageur de la BU).</p>';
+      msg+='<p>A bientôt,</p>';
+      ret = {message:msg};
+    } 
+    if(ret==null) throw "La demande d'achat n°<b>"+form.identifiant+"</b> a déjà été traitée.<br>A bientôt.";
+    return ret;
+  } catch(e){
+    e = (typeof e === 'string') ? new Error(e) : e;
+    Log_Severe("onValidateNiv0", Utilities.formatString("%s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
+    throw e;
+  }
+}
+// Evolution #2
+
+//******************************************************************************************************
 // Fonction execute lors que la demande passe au staut "Prise en compte Niv 1"
 // Actions realisees : creation d'une entree dans Historique DA + maj du statut dans Suivi DA
 //
@@ -12,7 +138,9 @@ function onPECNiv1(id) {
     // Recuperation de la liste des statuts d'une demande d'achat
     var state=GetRowParams(COLUMN_STATE);
     // Maj du statut PEC Niv 1 uniquement si la demande d'achat est initialisee
-    if (globalDAData.statut == state.initialise) {
+    // Evolution #2
+    //if (globalDAData.statut == state.initialise) {
+    if (globalDAData.statut == state.valideeNiv0) {
       // Creation d'une ligne d'historique
       createHistoryLine(globalDAData.id, state.priseEnCompteNiv1, Session.getActiveUser().getEmail(), "","");
       // Maj du statut de la demande d'achat
@@ -321,6 +449,10 @@ function onGenerationBDC(form){
       setDAData(globalDAData.id,COLUMN_DA_NUMBDC,form.idbdc);
       // Maj des conditions de reglement de la demande d'achat
       setDAData(globalDAData.id,COLUMN_DA_CONDREGL,form.conditionreglement);
+      // EVO-10
+      // Maj de la TVA de la demande d'achat
+      setDAData(globalDAData.id,COLUMN_DA_TVA,form.tva);
+      // EVO-10
       // Generation du BDC au format PDF
       urlBDC = generationBDCpdf(form.idbdc);
       // Maj de l'url du BDC au format PDF de la demande d'achat
@@ -426,10 +558,94 @@ function onValidateNiv3(form){
       // Gestion du BDC signe
       url_bcdsigne = saveFiles(form.drive_id_files.split(","),globalDAData.id);
       setDAData(globalDAData.id,COLUMN_DA_BDCPDFSIGNE,url_bcdsigne);
-      // Emailing aux Assistantes
+      // Emailing a l'emetteur
+      // Evolution #2
+      //mail_to=globalDAData.assistantes;
+      //mail_cc=globalDAData.emetteur+','+globalDAData.managerBU+','+globalDAData.managerEntrepriseParis;
+      mail_to=globalDAData.emetteur;
+      mail_cc=globalDAData.assistantes+','+globalDAData.managerBU+','+globalDAData.managerEntrepriseParis;
+      // Evolution #2
+      MailingTo(globalDAData.id,state.valideeNiv3,form.commentaire_manager_ok,mail_to, mail_cc, true);
+      // Retour de la fonction : message d'informations
+      msg='<h1>Merci</h1>',
+      msg+='<p> Votre demande a bien été complétée et son traitement est en cours.</p>';
+      // Evolution #2
+      //msg+='<p> Un mail vient d\'être  envoyé à <b>'+globalDAData.assistantes+'</b> (Assistante SQLi Enterprise).</p>';
+      msg+='<p> Un mail vient d\'être  envoyé à <b>'+globalDAData.emetteur+'</b> (Emetteur).</p>';
+      // Evolution #2
+      msg+='<p>A bientôt,</p>';
+      ret = {message:msg};
+    } 
+    if(ret==null) throw "La demande d'achat n°<b>"+form.identifiant+"</b> a déjà été traitée.<br>A bientôt.";
+    return ret;
+  } catch(e){
+    e = (typeof e === 'string') ? new Error(e) : e;
+    Log_Severe("onValidateNiv3", Utilities.formatString("%s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
+    throw e;
+  }
+}
+
+//******************************************************************************************************
+// Fonction execute lors que la demande passe au staut "Prise en compte Niv Diffusion"
+// Actions realisees : creation d'une entree dans Historique DA + maj du statut dans Suivi DA
+//
+// [S] /
+//******************************************************************************************************
+// Evolution #2
+function onPECNivDiff(id) {
+
+  try {
+    // Recuperation des donnees de la DA
+    getInfoDA(id);
+    // Recuperation de la liste des statuts d'une demande d'achat
+    var state=GetRowParams(COLUMN_STATE);
+    // Maj du statut PEC Niv Diffusion uniquement si la demande d'achat est validee Niv 3
+    if (globalDAData.statut == state.valideeNiv3) {
+      // Creation d'une ligne d'historique
+      createHistoryLine(globalDAData.id, state.priseEnCompteDiffusion, Session.getActiveUser().getEmail(), "","");
+      // Maj du statut de la demande d'achat
+      setDAData(globalDAData.id,COLUMN_DA_STATE,state.priseEnCompteDiffusion);
+    }
+  } catch(e){
+    e = (typeof e === 'string') ? new Error(e) : e;
+    Log_Severe("onPECNiv0", Utilities.formatString("%s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
+    throw e;
+  }
+}
+
+
+//******************************************************************************************************
+// Fonction execute lors que la demande passe au staut "Validation Niv Diffusion"
+// Actions realisees : creation d'une entree dans Historique DA + maj du statut dans Suivi DA + envoi
+// d'un email au Assistante
+//
+// [E] form : objet formulaire PEC Diff
+// [S] /
+//******************************************************************************************************
+function onValidateDiffusion(form){
+  var ret = null;
+  var msg="";
+  var mail_to="";
+  var mail_cc="";
+  var url_bcdsigne='';
+
+  try {
+    if(form===undefined ) throw 'null form';
+    if(form.identifiant=='' ) throw 'null form';
+    // Recuperation des donnees de la demande d'achat
+    getInfoDA(form.identifiant);
+    // Recuperation de la liste des statuts d'une demande d'achat
+    var state=GetRowParams(COLUMN_STATE);
+    // Action si le statut actuel est PEC Diffusion
+    if(globalDAData.statut == state.priseEnCompteDiffusion) {
+      // Creation d'une ligne d'historique
+      createHistoryLine(globalDAData.id, state.valideeDiffusion, Session.getActiveUser().getEmail(), form.commentaire_manager_ok,"");
+      // Maj du statut de la demande d'achat
+      setDAData(globalDAData.id,COLUMN_DA_STATE,state.valideeDiffusion);
+      // Emailing a l'emetteur
       mail_to=globalDAData.assistantes;
       mail_cc=globalDAData.emetteur+','+globalDAData.managerBU+','+globalDAData.managerEntrepriseParis;
-      MailingTo(globalDAData.id,state.valideeNiv3,form.commentaire_manager_ok,mail_to, mail_cc, true);
+      MailingTo(globalDAData.id,state.valideeDiffusion,form.commentaire_manager_ok,mail_to, mail_cc, true);
       // Retour de la fonction : message d'informations
       msg='<h1>Merci</h1>',
       msg+='<p> Votre demande a bien été complétée et son traitement est en cours.</p>';
@@ -441,10 +657,58 @@ function onValidateNiv3(form){
     return ret;
   } catch(e){
     e = (typeof e === 'string') ? new Error(e) : e;
-    Log_Severe("onValidateNiv3", Utilities.formatString("%s %s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
+    Log_Severe("onValidateDiffusion", Utilities.formatString("%s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
     throw e;
   }
 }
+
+//******************************************************************************************************
+// Fonction execute lors que la demande passe au staut "Invalidation Niv 3"
+// Actions realisees : creation d'une entree dans Historique DA + maj du statut dans Suivi DA + envoi
+// d'un email a l'emetteur de la demande, au manager de la BU, a la comptabilite fournisseur
+//
+// [E] form : objet formulaire DEC Niv 3b
+// [S] /
+//******************************************************************************************************
+function onInvalidateDiffusion(form){
+  var ret = null;
+  var msg="";
+  var mail_to="";
+  var mail_cc="";
+
+  try {
+    if(form===undefined ) throw 'null form';
+    if(form.identifiant=='' ) throw 'null form';
+    // Recuperation des donnees de la demande d'achat
+    getInfoDA(form.identifiant);
+    // Recuperation de la liste des statuts d'une demande d'achat
+    var state=GetRowParams(COLUMN_STATE);
+    // Action si le statut actuel est PEC
+    if(globalDAData.statut == state.priseEnCompteDiffusion) {
+      // Creation d'une ligne d'historique
+      createHistoryLine(globalDAData.id, state.invalideeDiffusion, Session.getActiveUser().getEmail(), form.commentaire_manager_ko,"");
+      // Maj du statut de la demande d'achat
+      setDAData(globalDAData.id,COLUMN_DA_STATE,state.invalideeDiffusion);
+      // Emailing a l'emetteur + manager de la BU de la demande d'achat
+      mail_to=globalDAData.emetteur+','+globalDAData.managerBU;
+      mail_cc=globalDAData.acteurComptaFournisseur+','+globalDAData.managerEntrepriseParis+','+globalDAData.assistantes;
+      MailingTo(globalDAData.id,state.invalideeDiffusion,form.commentaire_manager_ko,mail_to,mail_cc,true)
+      // Retour de la fonction : message d'informations
+      msg='<h1>Merci</h1>',
+      msg+='<p> Votre demande a bien été complétée et son traitement est en cours.</p>';
+      msg+='<p> Un mail vient d\'être  envoyé à <b>'+globalDAData.emetteur+'</b> (Emetteur de la demande) et <b>'+globalDAData.managerBU+'</b> (Manager de la BU '+globalDAData.buimputation+').</p>';
+      msg+='<p>A bientôt,</p>';
+      ret = {message:msg};
+    }
+    if(ret==null) throw "La demande d'achat n°<b>"+form.identifiant+"</b> a déjà été traitée.<br>A bientôt.";
+    return ret;
+  } catch(e){
+    e = (typeof e === 'string') ? new Error(e) : e;
+    Log_Severe("onInvalidateDiffusion", Utilities.formatString("%s (line %s, file '%s'). Stack: '%s' . While processing %s.",e.name||'',e.message||'',e.lineNumber||'',e.fileName||'', e.stack||'', e.processMessage||''));
+    throw e;
+  }
+}
+// Evolution #2
 
 //******************************************************************************************************
 // Fonction execute lors que la demande passe au staut "APP mis à jour"
@@ -468,7 +732,9 @@ function onSaisieAPP(form){
     // Recuperation de la liste des statuts d'une demande d'achat
     var state=GetRowParams(COLUMN_STATE);
     // Action si le statut actuel est PEC
-    if(globalDAData.statut == state.valideeNiv3) {
+    // S.VIOT 17/02/2016
+    //if(globalDAData.statut == state.valideeNiv3) {
+    if(globalDAData.statut == state.valideeDiffusion) {
       // Creation d'une ligne d'historique
       createHistoryLine(globalDAData.id, state.appMisAJour, Session.getActiveUser().getEmail(), form.commentaire_manager_ok,"");
       // Maj du statut de la demande d'achat
@@ -515,7 +781,9 @@ function onSendBDC(form){
     // Recuperation de la liste des statuts d'une demande d'achat
     var state=GetRowParams(COLUMN_STATE);
     // Action si le statut actuel APP MIS A JOUR ou VALIDEE NIV 3 (si DA non interne)
-    if ((globalDAData.statut == state.appMisAJour) || (globalDAData.statut == state.valideeNiv3)) {
+    // S.VIOT 17/02/2016
+    //if ((globalDAData.statut == state.appMisAJour) || (globalDAData.statut == state.valideeNiv3)) {
+    if ((globalDAData.statut == state.appMisAJour) || (globalDAData.statut == state.valideeDiffusion)) {
       // Creation d'une ligne d'historique
       createHistoryLine(globalDAData.id, state.bdcTransmis, Session.getActiveUser().getEmail(), saveEmailToHTML(form.destinataire,form.copie,form.copiecache,form.objetemail,form.message,globalDAData.urlBDCpdfsigne),globalDAData.urlBDCpdfsigne);
       // Maj du statut de la demande d'achat
@@ -633,8 +901,20 @@ function getParamPageByStatus(statut) {
   switch(statut) {
     case "INTIALISE" :
     case "initialise" :
-    case state.initialise : paramPage = {status:"PECNiv1", labelBashBoard:"Validation Unit"};
+    // Evolution #2 
+    //case state.initialise : paramPage = {status:"PECNiv1", labelBashBoard:"Validation Unit"};
+    case state.initialise : paramPage = {status:"PECNiv0", labelBashBoard:"Validation Assistante"};
+    // Evolution #2 
                             break;
+    // Evolution #2 
+    case "PRISE EN COMPTE NIV 0" :
+    case "priseEnCompteNiv0" :
+    case state.priseEnCompteNiv0 : paramPage = {status:"PECNiv0", labelBashBoard:"Validation Assistante"};
+                                   break;
+    case "VALIDEE NIV 0" :
+    case "valideeNiv0" :
+    case state.valideeNiv0: 
+    // Evolution #2 
     case "PRISE EN COMPTE NIV 1" :
     case "priseEnCompteNiv1" :
     case state.priseEnCompteNiv1 : paramPage = {status:"PECNiv1", labelBashBoard:"Validation Unit"};
@@ -659,8 +939,18 @@ function getParamPageByStatus(statut) {
                            break;
     case "VALIDEE NIV 3" :
     case "valideeNiv3" :
-    case state.valideeNiv3 : paramPage = {status:"EditAPP", labelBashBoard:"Mise à jour APP"};
+    case state.valideeNiv3 : // Evolution #2
+                             //paramPage = {status:"EditAPP", labelBashBoard:"Mise à jour APP"};
+                             paramPage = {status:"PECNivDiff", labelBashBoard:"Déclenchement diffusion"};
+                             // Evolution #2
                              break;
+    // Evolution #2
+    case "VALIDEE NIV DIFFUSION" :
+    case "valideeNivDiffusion" :
+    case state.valideeNivDiffusion : 
+                             paramPage = {status:"EditAPP", labelBashBoard:"Mise à jour APP"};
+                             break;
+    // Evolution #2
     case "APP MIS A JOUR" :
     case "appMisAJour" :
     case state.appMisAJour : paramPage = {status:"SendBDC", labelBashBoard:"Emailing au fournisseur"};
@@ -706,8 +996,12 @@ function generateInformationByStatus() {
   var htmlAvancementUnitAssistante = '';
   var htmlAvancementUnitClos = '';
   var dataParam;
+  // Evolution #2
+  var htmlAvancementEmetteur='';
+  var lstActionNiv0 ='';
+  var lstActionNivDiffusion = '';
   
-  // Liste du(des) action(s) a realiser si le statut de la demande est "Initialise" ou "Prise en compte Niv 1"
+  // Liste du(des) action(s) a realiser si le statut de la demande est "Initialise" ou "Prise en compte Niv 0"
   dataParam = getParamPageByStatus("initialise");
   lstActionInitialise+='  <li>';
   lstActionInitialise+='   <a target="_blank" href="'+getProcessAchatUrl()+'?page='+dataParam.status+'&ref=%%idDA%%">';
@@ -715,6 +1009,16 @@ function generateInformationByStatus() {
   lstActionInitialise+='    &nbsp;'+dataParam.labelBashBoard;
   lstActionInitialise+='   </a>';
   lstActionInitialise+='  </li>';
+  // Evolution #2 
+  // Liste du(des) action(s) a realiser si le statut de la demande est "Prise en compte Niv 1" ou "Validee Niv 0"
+  dataParam = getParamPageByStatus("valideeNiv0");
+  lstActionNiv0+='  <li>';
+  lstActionNiv0+='   <a target="_blank" href="'+getProcessAchatUrl()+'?page='+dataParam.status+'&ref=%%idDA%%">';
+  lstActionNiv0+='    <span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span>';
+  lstActionNiv0+='    &nbsp;'+dataParam.labelBashBoard;
+  lstActionNiv0+='   </a>';
+  lstActionNiv0+='  </li>';
+  // Evolution #2 
   // Liste du(des) action(s) a realiser si le statut de la demande est "Prise en compte Niv 2" ou "Validee Niv 1"
   dataParam = getParamPageByStatus("valideeNiv1");
   lstActionNiv1+='  <li>';
@@ -747,6 +1051,16 @@ function generateInformationByStatus() {
   lstActionNiv3+='    &nbsp;'+dataParam.labelBashBoard;
   lstActionNiv3+='   </a>';
   lstActionNiv3+='  </li>';
+  // Evolution #2
+  // Liste du(des) action(s) a realiser si le statut de la demande est "Validee Diffusion"
+  dataParam = getParamPageByStatus("valideeNivDiffusion");
+  lstActionNivDiffusion+='  <li>';
+  lstActionNivDiffusion+='   <a target="_blank" href="'+getProcessAchatUrl()+'?page='+dataParam.status+'&ref=%%idDA%%">';
+  lstActionNivDiffusion+='    <span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span>';
+  lstActionNivDiffusion+='    &nbsp;'+dataParam.labelBashBoard;
+  lstActionNivDiffusion+='   </a>';
+  lstActionNivDiffusion+='  </li>';
+  // Evolution #2
   // Liste du(des) action(s) a realiser si le statut de la demande est "APP Mis a jour"
   dataParam = getParamPageByStatus("appMisAJour");
   lstActionAPPMisAJour+='  <li>';
@@ -764,15 +1078,34 @@ function generateInformationByStatus() {
   lstActionBDCTransmis+='   </a>';
   lstActionBDCTransmis+='  </li>';
   // Avancement par regroupement
-  htmlAvancementUnit = '<span class="label label-primary">'+REGROUPEMENT_UNIT+'</span>';
+  // EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
+  /*htmlAvancementUnit = '<span class="label label-primary">'+REGROUPEMENT_UNIT+'</span>';
   htmlAvancementUnitDirection = '<span class="label label-success">'+REGROUPEMENT_DIRECTION+'</span>';
   htmlAvancementUnitCompta = '<span class="label label-info">'+REGROUPEMENT_COMPTA+'</span>';
-  htmlAvancementUnitAssistante = '<span class="label label-warning">'+REGROUPEMENT_ASSISTANTE+'</span>';
+  htmlAvancementUnitAssistante = '<span class="label label-warning" data-toggle="tooltip" title="Hooray!">'+REGROUPEMENT_ASSISTANTE+'</span>';
+  htmlAvancementUnitClos = '<span class="label label-danger">'+REGROUPEMENT_CLOS+'</span>';*/
+  htmlAvancementUnit = '<span class="label label-primary" ata-toggle="tooltip" title="%LSTACT%">'+REGROUPEMENT_UNIT+'</span>';
+  htmlAvancementUnitDirection = '<span class="label label-success" data-toggle="tooltip" title="'+GetAffichageManagerBU(BU_ENTREPRISE_PARIS)+'">'+REGROUPEMENT_DIRECTION+'</span>';
+  htmlAvancementUnitCompta = '<span class="label label-info" data-toggle="tooltip" title="'+GetAffichageManagerBU(BU_COMPTA_FOURNISSEUR)+'">'+REGROUPEMENT_COMPTA+'</span>';
+  htmlAvancementUnitAssistante = '<span class="label label-warning" data-toggle="tooltip" title="'+GetAffichageManagerBU(BU_ASSISTANTE_ENTREPRISE_PARIS)+'">'+REGROUPEMENT_ASSISTANTE+'</span>';
   htmlAvancementUnitClos = '<span class="label label-danger">'+REGROUPEMENT_CLOS+'</span>';
+  // Evolution #2 
+  htmlAvancementEmetteur = '<span class="label label-default">'+REGROUPEMENT_EMETTEUR+'</span>';
+  // Evolution #2 
+  // EVO-08 : Reporting / Afficher la liste des interlocuteurs pour chaque niveau d’avancement
   // Generation du tableau de retour
   lstActionByStatus= {"initialise_1": lstActionInitialise,
-                      "initialise_2": htmlAvancementUnit,
-                      "priseEnCompteNiv1_1": lstActionInitialise,
+                      // Evolution #2 
+                      //"initialise_2": htmlAvancementUnit,
+                      "initialise_2": htmlAvancementUnitAssistante,
+                      "priseEnCompteNiv0_1": lstActionInitialise,
+                      "priseEnCompteNiv0_2": htmlAvancementUnitAssistante,
+                      "valideeNiv0_1": lstActionNiv0,
+                      "valideeNiv0_2": htmlAvancementUnit,
+                      "invalideeNiv0_1": "",
+                      "invalideeNiv0_2": htmlAvancementUnitClos,
+                      // Evolution #2                      
+                      "priseEnCompteNiv1_1": lstActionNiv0,
                       "priseEnCompteNiv1_2": htmlAvancementUnit,
                       "valideeNiv1_1": lstActionNiv1,
                       "valideeNiv1_2": htmlAvancementUnitDirection,
@@ -788,12 +1121,26 @@ function generateInformationByStatus() {
                       "priseEnCompteComptaFournisseur_2": htmlAvancementUnitCompta,
                       "bdcGenere_1" : lstActionBDCGenere,
                       "bdcGenere_2" : htmlAvancementUnitCompta,
+                      // Evolution #2
+                      //"valideeNiv3_1" : lstActionNiv3,
+                      //"valideeNiv3_2" : htmlAvancementUnitAssistante,
+                      //"valideeNiv3_11" : lstActionAPPMisAJour,
+                      //"valideeNiv3_12" : htmlAvancementUnitAssistante,
                       "valideeNiv3_1" : lstActionNiv3,
-                      "valideeNiv3_2" : htmlAvancementUnitAssistante,
-                      "valideeNiv3_11" : lstActionAPPMisAJour,
-                      "valideeNiv3_12" : htmlAvancementUnitAssistante,
+                      "valideeNiv3_2" : htmlAvancementEmetteur,                      
+                      // Evolution #2
                       "invalideeNiv3_1" : "",
                       "invalideeNiv3_2" : htmlAvancementUnitClos,
+                      // Evolution #2
+                      "priseEnCompteNivDiffusion_1": lstActionNiv3,
+                      "priseEnCompteNivDiffusion_2": htmlAvancementEmetteur,
+                      "invalideeNivDiffusion_1" : "",
+                      "invalideeNivDiffusion_2" : htmlAvancementUnitClos,
+                      "valideeNivDiffusion_1" : lstActionNivDiffusion,
+                      "valideeNivDiffusion_2" : htmlAvancementUnitAssistante,
+                      "valideeNivDiffusion_11" : lstActionAPPMisAJour,
+                      "valideeNivDiffusion_12" : htmlAvancementUnitAssistante,
+                      // Evolution #2
                       "appMisAJour_1" : lstActionAPPMisAJour,
                       "appMisAJour_2" : htmlAvancementUnitAssistante,
                       "bdcTransmis_1" : lstActionBDCTransmis,
@@ -819,6 +1166,13 @@ function isAuthorizedAction(idDA, nextAction, connectedUser) {
   } else {
     var infoDA = getInfoDA(idDA);
     switch(nextAction) {
+      // Evolution #2
+      case "PECNiv0" : // Seule les Assistantes sont autorisees
+                       if (InStr(1,infoDA.assistantes,connectedUser,0) > 0) {
+                        blnAuthorizedAction=true;
+                       }
+                       break;
+      // Evolution #2
       case "PECNiv1": // Seul le manager de la BU d'imputation de la DA est autorise
                       if (InStr(1,infoDA.managerBU,connectedUser,0) > 0) {
                         blnAuthorizedAction=true;
@@ -839,6 +1193,13 @@ function isAuthorizedAction(idDA, nextAction, connectedUser) {
                          blnAuthorizedAction=true;
                         }
                         break;
+      // Evolution #2 
+      case 'PECNivDiff' :// Seule l'emetteur est autorisee
+                        if (InStr(1,infoDA.emetteur,connectedUser,0) > 0) {
+                         blnAuthorizedAction=true;
+                        }
+                        break;  
+      // Evolution #2  
       case "EditAPP" : // Seule les Assistantes sont autorisees
                        if (InStr(1,infoDA.assistantes,connectedUser,0) > 0) {
                         blnAuthorizedAction=true;

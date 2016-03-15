@@ -1,7 +1,11 @@
 function doGet(request) {
   
+  
   var html=null;
   var blnAuthorizedAction = false;
+  // S.VIOT Google Analytics
+  strActionName = request.parameter.page;
+  // S.VIOT Google Analytics
   
   switch(request.parameter.page){
   
@@ -10,6 +14,26 @@ function doGet(request) {
                         .setTitle('Saisie Formulaire Demande d Achat')
                         .setSandboxMode(HtmlService.SandboxMode.IFRAME);
                      break;
+    case 'ReleaseNote' : html = HtmlService.createTemplateFromFile('form_ReleaseNote')
+                            .evaluate()
+                            .setTitle('Release Note')
+                            .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+                     break;
+    // Evolution #2  
+    case 'PECNiv0' : blnAuthorizedAction=isAuthorizedAction(request.parameter.ref, request.parameter.page, Session.getActiveUser().getEmail());
+                     if (blnAuthorizedAction) {
+                       html = HtmlService.createTemplateFromFile('form_PEC0');
+                       onPECNiv0(request.parameter.ref);
+                     } else {
+                       html = HtmlService.createTemplateFromFile('form_NotAuthorized');
+                     }
+                     html.reference = request.parameter.ref;
+                     html.type= (request.parameter.type=='expanded')?request.parameter.type:'small';
+                     html = html.evaluate()
+                        .setTitle("Réponse à la demande d'achat")
+                        .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+                     break;
+    // Evolution #2  
     case 'PECNiv1' : blnAuthorizedAction=isAuthorizedAction(request.parameter.ref, request.parameter.page, Session.getActiveUser().getEmail());
                      if (blnAuthorizedAction) {
                        html = HtmlService.createTemplateFromFile('form_PEC1');
@@ -61,6 +85,21 @@ function doGet(request) {
                         .setTitle("Réponse à la demande d'achat")
                         .setSandboxMode(HtmlService.SandboxMode.IFRAME);
                       break;         
+    // Evolution #2
+    case 'PECNivDiff' : blnAuthorizedAction=isAuthorizedAction(request.parameter.ref, request.parameter.page, Session.getActiveUser().getEmail());
+                      if (blnAuthorizedAction) {
+                        html = HtmlService.createTemplateFromFile('form_PECDiff');
+                        onPECNivDiff(request.parameter.ref);
+                      } else {
+                        html = HtmlService.createTemplateFromFile('form_NotAuthorized');
+                      }
+                      html.reference = request.parameter.ref;
+                      html.type= (request.parameter.type=='expanded')?request.parameter.type:'small';
+                      html = html.evaluate()
+                        .setTitle("Réponse à la demande d'achat")
+                        .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+                      break;
+    // Evolution #2
     case 'EditAPP' : blnAuthorizedAction=isAuthorizedAction(request.parameter.ref, request.parameter.page, Session.getActiveUser().getEmail());
                      if (blnAuthorizedAction) {
                        html = HtmlService.createTemplateFromFile('form_EditAPP');

@@ -199,14 +199,26 @@ function getHtml_BUImputation(){
     throw "no params";
   }
 
-  params = SpreadsheetApp.openById(CLSID)
+  // Evolution EVO-18 : Impact de la réorganisation de SQLi Entreprise Paris
+  /*params = SpreadsheetApp.openById(CLSID)
                          .getSheetByName(SHEET_PARAMS)
                          .getRange(6,column.BU+1,MAX_ROW)
                          .getValues();
   var out = cleanArray(params);
   for( var i=0;i<out.length;i++){
     html+='<option>'+out[i]+'</option>';
+  }*/
+  params = SpreadsheetApp.openById(CLSID)
+                         .getSheetByName(SHEET_PARAMS)
+                         .getRange(6,column.BU+1,MAX_ROW,3)
+                         .getValues();  
+  params.sort(compareFirstColumn);
+  for( var i=0;i<params.length;i++){
+    if ((params[i][0] != '') && (params[i][2] == 'O')) {
+      html+='<option>'+params[i][0]+'</option>';
+    }
   }
+  // Evolution EVO-18 : Impact de la réorganisation de SQLi Entreprise Paris
   return html;
 }
 
@@ -273,6 +285,15 @@ function compareSecondColumn(a, b) {
     }
     else {
         return (a[1] < b[1]) ? -1 : 1;
+    }
+}
+
+function compareFirstColumn(a, b) {
+    if (a[0] === b[0]) {
+        return 0;
+    }
+    else {
+        return (a[0] < b[0]) ? -1 : 1;
     }
 }
 
@@ -349,6 +370,16 @@ function getFonctionFicheFournisseur() {
 }
 
 //******************************************************************************************************
+// Fonction de retourne l'url vers la fonction Release Note
+//
+// [E] /
+// [S] Url de la fonction Release Note
+//******************************************************************************************************
+function getReleaseNoteLink() {
+  return getProcessAchatUrl() + '?page=ReleaseNote';
+}
+
+//******************************************************************************************************
 // Fonction qui retourne l'adresse email du manager de la BU d'imputation
 //
 // [E] bu : Valeur de la BU d'imputation
@@ -374,6 +405,39 @@ function GetManagerBU(bu){
     if( params[i][column.BU]==bu) { out = params[i][column.BU+1]; break;}
   }
   return out;
+}
+
+//******************************************************************************************************
+// Fonction qui retourne l(les)'adresse(s) email du manager de la BU d'imputation pour un affichage HTML
+//
+// [E] bu : Valeur de la BU d'imputation
+// [S] Adresse email du manager de la BU ou Erreur ou '' sinon
+//******************************************************************************************************
+function GetAffichageManagerBU(bu){
+  if(bu===undefined ) throw 'null bu';
+  
+  var column ={BU:-1}, out='', temp, len, ret='';
+  var params = SpreadsheetApp.openById(CLSID)
+                         .getSheetByName(SHEET_PARAMS)
+                         .getDataRange()
+                         .getValues();
+  
+  for( var i=0;i< params[0].length;i++){
+    if(params[0][i]==COLUMN_BU ) {column.BU=i;break;}
+  } 
+  if(column.BU==-1 ) {
+    Log_Severe("GetAffichageManagerBU", Utilities.formatString("Column [%s] non defined.",COLUMN_BU));    
+    throw "no params";
+  }
+  for( var i=0;i<params.length;i++){
+    if( params[i][column.BU]==bu) { out = params[i][column.BU+1]; break;}
+  }
+  temp = out.split(",");
+  len = temp.length;
+  for(n=1;n<len+1;++n){
+    ret +=temp[n-1]+"&#13";
+  }  
+  return ret;
 }
 
 //******************************************************************************************************
@@ -506,7 +570,13 @@ function save_form(form,mail,filesID){
     out.push("");
   }
   out.push(form.find('adresselivraison'));
-  out.push("");
+  // EVO-21
+  //out.push("");
+  out.push(form.find('conditionreglement'));
+  // EVO-21
+  // EVO-10
+  out.push(form.find('tauxtva'));
+  // EVO-10
   Log_Info("save_form", Utilities.formatString("DA=%s, out=%s",idDA,out));
   // Ecriture des donnes de la demande d'achat dans le Google Sheet / Suivi DA associe
   SpreadsheetApp.openById(CLSID)
@@ -571,7 +641,9 @@ function save_form(form,mail,filesID){
     Log_Severe("save_form", Utilities.formatString("File 'Devis' not defined in DA %s.",idDA));
   }
   // Email vers le manager de la BU d'imputation
-  mail_to = GetManagerBU(form.find('buimputation'));
+  // Evolution #2
+  //mail_to = GetManagerBU(form.find('buimputation'));
+  mail_to = GetManagerBU(BU_ASSISTANTE_ENTREPRISE_PARIS);
   mail_cc = Session.getActiveUser().getEmail();
   MailingTo(idDA,
             state.initialise,
@@ -579,7 +651,9 @@ function save_form(form,mail,filesID){
             mail_to,
             mail_cc,
             true);
-  return {id:idDA,managerBU:mail_to,buimputation:form.find('buimputation')}; 
+  // Evolution #2
+  //return {id:idDA,managerBU:mail_to,buimputation:form.find('buimputation')}; 
+  return {id:idDA,assistante:GetManagerBU(BU_ASSISTANTE_ENTREPRISE_PARIS)}; 
 }
 
 //******************************************************************************************************
@@ -593,6 +667,12 @@ function getInfoDA(id){
   var idrow = onSearchDAwithID(id);
   var dtDeb = '', strDtDeb='';
   var dtFin = '', strDtFin='';
+  // EVO-21
+  var strCondition = '';
+  // EVO-21
+  // EVO-10
+  var strTVA = '';
+  // EVO-10
   if (idrow != -1) {
     dtDeb = sheet.getRange(idrow,COLUMN_DA_DTDEBLIV).getValue();
     if (dtDeb != '') {
@@ -602,6 +682,17 @@ function getInfoDA(id){
     if (dtFin != '') {
       strDtFin = Utilities.formatDate(dtFin, "GMT+6", "dd/MM/yyyy");
     }
+    // EVO-21
+    if (sheet.getRange(idrow,COLUMN_DA_CONDREGL).getValue() != "") {
+      strCondition = LIB_COND_REG_EMETTEUR + sheet.getRange(idrow,COLUMN_DA_CONDREGL).getValue();
+    }
+    // EVO-21
+    // EVO-10
+    if (sheet.getRange(idrow,COLUMN_DA_TVA).getValue() != "") {
+      strTVA = LIB_COND_TVA_EMETTEUR + sheet.getRange(idrow,COLUMN_DA_TVA).getValue();
+    }
+    // EVO-10
+
     globalDAData= {id:id,
           idrow:idrow,
           bdc:sheet.getRange(idrow,COLUMN_DA_NUMBDC).getValue(),
@@ -626,6 +717,13 @@ function getInfoDA(id){
           datefinlivraison:strDtFin,
           adresselivraison:sheet.getRange(idrow,COLUMN_DA_ADRLIV).getValue(),
           conditionreglement:sheet.getRange(idrow,COLUMN_DA_CONDREGL).getValue(),
+          // EVO-21
+          conditionreglementemetteur:strCondition,
+          // EVO-21
+          // EVO-10
+          tva:sheet.getRange(idrow,COLUMN_DA_TVA).getValue(),
+          tvaemetteur:strTVA,
+          // EVO-10
           urlDA:sheet.getRange(idrow,COLUMN_DA_URLDA).getValue(),
           urlDevis:sheet.getRange(idrow,COLUMN_DA_DEVIS).getValue(),
           urlBDCpdf:sheet.getRange(idrow,COLUMN_DA_BDCPDF).getValue(),
@@ -801,6 +899,9 @@ function setDAData(id, colonne, valeur) {
       case COLUMN_DA_BDCPDFSIGNE : globalDAData.urlBDCpdfsigne = valeur; break;
       case COLUMN_DA_FACTURE : globalDAData.urlFacture = valeur; break;
       case COLUMN_DA_BPF : globalDAData.urlBPF = valeur; break;
+      // EVO-10
+      case COLUMN_DA_TVA : globalDAData.tva = valeur; break;
+      // EVO-10
       /*case COLUMN_DA_FICHE : break;
       case COLUMN_DA_ISVALIDENIV2 : break;
       case COLUMN_DA_UPADTED : break;*/
@@ -1146,15 +1247,19 @@ function getListGeneralUserAuthorized() {
   return ListGeneralUserAuthorized;
 }
 
+//******************************************************************************************************
+// Fonction qui retourne si le user courant est admin ou pas
+//
+// [E] : - 
+// [S] : true/false
+//******************************************************************************************************
+function isAdminSuivi() {
+  var ret=false,users = Get_ADMIN_SUIVI(), current_user = Session.getActiveUser().getEmail();
+  ret= users.split(',').lastIndexOf(current_user)!=-1;
+  Logger.log('Logging page, current user:%s, is admin:%s',current_user,ret)
+  return ret;
+}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/**
- * IsAdmin : detect if the current user is admin
-
- * return : true if a current user in the list
- *
-**/
 //******************************************************************************************************
 // Fonction qui retourne si le user courant est admin ou pas
 //
@@ -1171,7 +1276,84 @@ function isAdmin() {
 
 }
 
-function testing(){
+//******************************************************************************************************
+// Fonction de generation de la LD Taux de TVA (en fonction des donnees TauxDeTva de l'onglet Params)
+// EVO-10
+//
+// [E] /
+// [S] Code HTML du contenu de la LD Taux de TVA ou Erreur ou '' sinon
+//******************************************************************************************************
+function getHtml_TauxDeTVA(){
+  var html='';
+  var column ={Taux2Tva:-1};
+  var params = SpreadsheetApp.openById(CLSID)
+                         .getSheetByName(SHEET_PARAMS)
+                         .getDataRange()
+                         .getValues();
+
+  for( var i=0;i< params[0].length;i++){
+    if(params[0][i]==COLUMN_TVA ) {column.Taux2Tva=i;break;}
+  }
+  if(column.Taux2Tva==-1) {
+    Log_Severe("getHtml_TauxDeTVA", Utilities.formatString("Column [%s] non defined.",COLUMN_TVA));
+    throw "no params";
+  }
+
+  params = SpreadsheetApp.openById(CLSID)
+                         .getSheetByName(SHEET_PARAMS)
+                         .getRange(2,column.Taux2Tva+1,MAX_ROW,2)
+                         .getValues();
+  var key = cleanArray(params);
+  for( var i=0;i<params.length;i++){
+    if (params[i][1] != "") {
+      html+='<option id="'+params[i][1]+'">'+params[i][0]+'</option>';
+    } else {
+      break;
+    }
+  }
+  return html;
 }
+
+//******************************************************************************************************
+// Fonction de generation de la LD Taux de TVA (en fonction des donnees TauxDeTva de l'onglet Params)
+// pour la generation du bon de commande : valeur Inconnue impossible
+// EVO-10
+//
+// [E] /
+// [S] Code HTML du contenu de la LD Taux de TVA ou Erreur ou '' sinon
+//******************************************************************************************************
+function getHtml_TauxDeTVABDC(){
+  var html='';
+  var column ={Taux2Tva:-1};
+  var params = SpreadsheetApp.openById(CLSID)
+                         .getSheetByName(SHEET_PARAMS)
+                         .getDataRange()
+                         .getValues();
+
+  for( var i=0;i< params[0].length;i++){
+    if(params[0][i]==COLUMN_TVA ) {column.Taux2Tva=i;break;}
+  }
+  if(column.Taux2Tva==-1) {
+    Log_Severe("getHtml_TauxDeTVABDC", Utilities.formatString("Column [%s] non defined.",COLUMN_TVA));
+    throw "no params";
+  }
+
+  params = SpreadsheetApp.openById(CLSID)
+                         .getSheetByName(SHEET_PARAMS)
+                         .getRange(2,column.Taux2Tva+1,MAX_ROW,2)
+                         .getValues();
+  var key = cleanArray(params);
+  for( var i=0;i<params.length;i++){
+    if ((params[i][1] != "")) {
+      if (params[i][1] != "INC") {
+        html+='<option id="'+params[i][1]+'">'+params[i][0]+'</option>';
+      }
+    } else {
+      break;
+    }
+  }
+  return html;
+}
+
 
 

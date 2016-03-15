@@ -124,6 +124,22 @@ google.script.run
        .withFailureHandler(function(message){$("#buimputation").html(message);})
        .getHtml_BUImputation();     
 
+// EVO-21
+// Alimentation LD Condition de reglement
+google.script.run
+       .withSuccessHandler(function(html){$('select#conditionreglement').html(html);$('select#conditionreglement').prop( "selectedIndex", -1);})
+       .withFailureHandler(function(message){$("#conditionreglement").html(message);})
+       .getHtml_ConditionReglement();  
+// EVO-21
+
+// EVO-10
+// Alimentation LD Taux de TVA
+google.script.run
+       .withSuccessHandler(function(html){$('select#tauxtva').html(html);$('select#tauxtva').prop( "selectedIndex", -1);})
+       .withFailureHandler(function(message){$("#tauxtva").html(message);})
+       .getHtml_TauxDeTVA();  
+// EVO-10
+
 // Alimentation LD Fournisseur
 google.script.run
        .withSuccessHandler(function(html){$('select#fournisseur').html(html);$('select#fournisseur').prop( "selectedIndex", -1);})
@@ -361,8 +377,10 @@ var valDateDebutLivraison = $('input#datedebutlivraison').val();
           // Collecte des données
           google.script.run
              .withSuccessHandler(function(values){$('#welldone #identifier').html(values.id);
-                                            $('#welldone #managerBU').html(values.managerBU);
-                                            $('#welldone #buimputation').html(values.buimputation);
+                                            // Evolution #2
+                                            //$('#welldone #managerBU').html(values.managerBU);
+                                            //$('#welldone #buimputation').html(values.buimputation);
+                                            $('#welldone #assistante').html(values.assistante);
                                             $('#wait').modal('hide');
                                             $('#form_page1').hide();$('#welldone').show();
                                        })
@@ -389,8 +407,9 @@ var valDateDebutLivraison = $('input#datedebutlivraison').val();
         // Collecte des données
         google.script.run
            .withSuccessHandler(function(values){$('#welldone #identifier').html(values.id);
-                                        $('#welldone #managerBU').html(values.managerBU);
-                                        $('#welldone #buimputation').html(values.buimputation);
+                                        //$('#welldone #managerBU').html(values.managerBU);
+                                        //$('#welldone #buimputation').html(values.buimputation);
+                                        $('#welldone #assistante').html(values.assistante);
                                         $('#wait').modal('hide');
                                         $('#form_page1').hide();$('#welldone').show();
                                        })

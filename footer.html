@@ -1,16 +1,26 @@
 <div class="navbar navbar-default navbar-fixed-bottom">
   <div class="container">
+    <p class="navbar-text pull-left "><a class="btn-info btn" href="<?=getReleaseNoteLink()?>" target="_blank" title="Release Notes" >Release Notes</a></p>
     <p class="navbar-text pull-left ">Site Built by <a class="text-mutex" href="http://www.sqli-enterprise.com/" target="_blank" title="Lien SQLI" >sqli.com</a></p>
-        <span class="col-sm-8 ">
-        <div class="ticker-wrap">
-          <div class="ticker" style="-webkit-animation-duration: 40s;animation-duration: 40s;"></div>
-        </div>
-        </span>
-        <!--<span id="documentation" class="navbar-btn btn-success btn pull-right"><a>Manuel Utilisateur</a></span>-->
-         <a class="navbar-btn btn-success btn pull-right" id="documentation" href="<?=getDocumentationOutil()?>">Manuel Utilisateur</a>
-    <span id="contact" class="navbar-btn btn-danger btn pull-right" title="Prendre contact" >Contact</span>
+    <span class="col-sm-6 ">
+      <p class="navbar-text pull-center "><b><?=enumParams('Informations accueil')?></b></p>
+      <!--<div class="ticker-wrap">
+        <div class="ticker" style="-webkit-animation-duration: 40s;animation-duration: 40s;"></div>
+      </div>-->
+    </span>
+    <p class="navbar-text pull-left "><a class="btn-success btn pull-right" id="documentation" href="<?=getDocumentationOutil()?>">Manuel Utilisateur</a>
+    <span id="contact" class="btn-danger btn pull-right" title="Prendre contact" >Contact</span></p>
   </div>
 </div>
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-74298435-1', 'auto', {'userId': '<?=Session.getActiveUser().getEmail()?>'});
+ga('send', {
+  hitType: 'pageview',
+  page: <?=strActionName;?>
+});
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
 <script>
 $(function(){
 //******************************************************************************************************
