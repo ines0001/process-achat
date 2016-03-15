@@ -1,0 +1,80 @@
+<script>
+$(function(){
+//******************************************************************************************************
+// Ajout de classe sur objet html select_response
+//******************************************************************************************************
+if($('#select_response').data('param_type')=='small'){
+  $( '#select_response div[data-val="true"]' ).addClass('col-md-push-2');
+  $( '#select_response div[data-val="false"]' ).addClass('col-md-push-2');
+}
+
+//******************************************************************************************************
+// Affichage differencie entre PROD et INT
+//******************************************************************************************************
+google.script.run
+     .withSuccessHandler(function(ret){if(ret) $('.navbar span[class="navbar-brand navbar-nav navbar-right"]').append('<span class="glyphicon glyphicon-wrench" style="color:red" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Etat: HORS PRODUCTION"></span>');})
+     .IsIntegration();
+
+//******************************************************************************************************
+// Init bootstrapSwitch
+//******************************************************************************************************
+$.fn.bootstrapSwitch.defaults.onText = 'OUI';
+$.fn.bootstrapSwitch.defaults.offText = 'NON';
+$.fn.bootstrapSwitch.defaults.onColor = 'success';
+$.fn.bootstrapSwitch.defaults.size='small';
+$("#select_response input").bootstrapSwitch();
+
+//******************************************************************************************************
+// Ajout de la classe has-error pour le champs types Required  
+//******************************************************************************************************
+$('input[required],textarea[required],select[required]').each(function(index) {  
+  $(this).parent().addClass('has-error');
+  });
+
+//******************************************************************************************************
+// Affectation Nom=Id au objet htlm input, ...
+//******************************************************************************************************
+$('input, textarea, select').each(function(index){
+  $(this).attr("name",$(this).attr("id"));
+});
+
+//******************************************************************************************************
+// Get Event click bootstrapSwitch input='option'
+//******************************************************************************************************
+$('#select_response input').on('switchChange.bootstrapSwitch', function(event, state) {
+              switch($(this).val()){
+                case 'True':
+                      $(':input').not(':button, :submit, :radio, :hidden').val('');
+                      $('form:visible').hide();$('#form_true').show();
+                      break;
+                case 'False':
+                      $(':input').not(':button, :submit, :radio, :hidden').val('');
+                      $('form:visible').hide();$('#form_false').show();
+                      break;
+                case '': // Cas d'un seul bloc Oui/Non
+                      $(':input').not(':button, :submit, :radio, :hidden').val('');
+                      if (state == true) {
+                        $('form:visible').hide();$('#form_true').show();
+                      } else {
+                        $('form:visible').hide();$('#form_false').show();
+                      }
+                      break;
+                default:/*PROBLEME*/
+                }
+});
+
+});
+
+//******************************************************************************************************
+// Fonction qui determine si la demande est de type sous-traitance ou non (Forfait ou Regie)
+//
+// [E] valCTypeDemande : valeur de la donnee Type de demande (Code)
+// [S] True si sous-traitance forfait ou regie, False sinon
+//******************************************************************************************************
+function isSousTraitance(valCTypeDemande) {
+  if ((valCTypeDemande == 'SST-FOR') || (valCTypeDemande == 'SST-REG')) {
+    return true;
+  }
+  return false;
+}
+</script>

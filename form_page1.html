@@ -1,0 +1,157 @@
+<form id="form_page1" class="well"  >
+      
+       <!-- TYPE DE DEMANDE / FOURNISSEUR --> 
+       <div class="clearfix form-group ">
+       <section class="col-sm-6 ">
+         <h4>
+           <label class="control-label" data-toggle="tooltip" data-placement="bottom" title="Sélectionner le type de la demande d'achat">*Type de demande:</label>
+           <select id="typedemande" class="form-control" required>
+           </select>
+         </h4>
+       </section>
+       <section class="col-sm-6 ">
+         <h4>
+           <label class="control-label" data-toggle="tooltip" data-placement="bottom" title="Sélectionner le fournisseur de la demande d'achat">*Fournisseur référencé:</label>
+           <select id="fournisseur" class="form-control" required>
+           </select>
+         </h4>
+         <small class="help-block " style="font-size: 1.0em">Si le fournisseur n'est pas présent dans cette liste,<br> <a target="_blank" class="btn btn-info" id="lienfichefournisseur" href="">cliquer ici</a> pour déclarer un nouveau fournisseur.</small>
+       </section>
+       </div>
+       <!-- NATURE DE LA DEMANDE / INTERLOCUTEUR FOURNISSEUR --> 
+       <div class="clearfix form-group ">
+       <section class="col-sm-6 ">
+         <label class="control-label" title="Décrire la nature de la demande d'achat">*Nature de la demande:</label>
+         <textarea id="nature" type="textarea" class="form-control" rows="5" required></textarea>
+         <small class="help-block">Détailler la nature de la demande</small>
+       </section>
+       <section class="col-sm-6 ">
+         <label class="control-label" data-toggle="tooltip" data-placement="bottom" title="Les champs cerclés de rouge sont obligatoires">Interlocuteur fournisseur connu:</label>
+         <select id="interlocuteurfournisseur" class="form-control">
+         </select>
+         <small class="help-block" style="font-size: 1.0em">Si le contact du fournisseur n'est pas présent dans cette liste,<br> <a href="#" class="btn btn-info" id="liencontactfournisseur" onclick="afficheSaisieContact();">cliquer ici</a> pour créer un contact dans la demande.</small>
+       </section>
+       </div>
+       <div class="clearfix form-group ">
+        <section class="col-sm-4" style="display:none" id="sectioncf">
+         <label id="lblnomcontactfournisseur" class="control-label" data-toggle="tooltip" data-placement="bottom" title="">Nom du contact fournisseur:</label>
+         <input id="nomcontactfournisseur" type="text" class="form-control " placeholder="Saisir le nom du contact associé à ce fournisseur" style='text-transform:uppercase'>
+        </section>
+        <section class="col-sm-4" style="display:none" id="sectionce">
+         <label id="lblemailcontactfournisseur" class="control-label" data-toggle="tooltip" data-placement="bottom" title="" pattern="[A-Za-z0-9_-.]+@[a-z0-9-]*\.[a-z]{2,4}(,[A-Za-z0-9_-]+@[a-z0-9-]*\.[a-z]{2,4})*">Email:</label>
+         <input id="emailcontactfournisseur" type="text" class="form-control " placeholder="SAISIR L'ADRESSE EMAIL DU CONTACT ASSOCIE A CE FOURNISSEUR">
+        </section>
+        <section class="col-sm-4" style="display:none" id="sectionct">
+         <label id="lbltelcontactfournisseur" class="control-label" data-toggle="tooltip" data-placement="bottom" title="">N° de téléphone:</label>
+         <input id="telcontactfournisseur" type="text" class="form-control " placeholder="SAISIR LE NUMERO DE TELEPHONE DU CONTACT ASSOCIE A CE FOURNISSEUR">
+        </section>
+       </div>
+       <!-- BU IMPUTATION / CODE PROJET / NOM DU PROJET -->
+       <div class="clearfix form-group">
+        <section class="col-sm-3">
+           <label class="control-label"  data-toggle="tooltip" data-placement="bottom" title="Sélectionner la BU d'imputation liée à la demande d'achat">*BU Imputation:</label>
+           <select id="buimputation" class="form-control" required>
+           </select>
+        </section>
+        <section class="col-sm-3">
+           <label id="lblcodeprojet" class="control-label" data-toggle="tooltip" data-placement="bottom" title="">Code projet:</label>
+           <input id="codeprojet" type="text" class="form-control " placeholder="Saisir le code projet associé à la demande d'achat" style='text-transform:uppercase'>
+        </section>
+        <section class="col-sm-6">
+           <label class="control-label" data-toggle="tooltip" data-placement="bottom" title="">Nom du projet:</label>
+           <input id="nomprojet" type="text" class="form-control " placeholder="Saisir le nom du projet associé à la demande d'achat" style='text-transform:uppercase'>
+        </section>
+        </div>
+       <!-- QUANTITE / PRIX UNITAIRE/TJM ACHAT / PRIX UNITAIRE/TJM VENDU / MARGE -->
+       <div class="clearfix form-group">
+        <section id="zonequantite" class="col-sm-3">
+           <label class="control-label" title="Saisir la quantité ou le nombre de jour de prestation">*Quantité:</label>
+           <div class="input-group">
+             <input id="quantite" name="" class="form-control" placeholder="0000" type="text" required pattern="(?:\d*)">
+             <span class="input-group-addon" ><b>unitaire</b></span>
+           </div>
+           <small id="infoquantite" class="help-block " style="display:none"><a class="panel-red">Détailler la nature de la demande</a></small>
+        </section>
+        <section class="col-sm-3">
+           <label id="lblprixtjmachat" class="control-label" title="Saisir le prix unitaire d'achat ou le TJM d'achat">*Prix unitaire/TJM Achat:</label>
+           <div class="input-group">
+             <input id="prixtjmachat" name="" class="form-control" placeholder="000000.00" type="text" required pattern="(?:\d*\.)?\d+">
+             <span class="input-group-addon" ><b>€ HT</b></span>
+           </div>
+        </section>
+        <section id="zoneprixtjmvendu" class="col-sm-3">
+           <label id="lblprixtjmvendu" class="control-label" title="Saisir le prix unitaire vendu ou le TJM vendu">*Prix unitaire/TJM Vendu:</label>
+           <div class="input-group">
+             <input id="prixtjmvendu" name="" class="form-control" placeholder="000000.00" type="text" required pattern="(?:\d*\.)?\d+">
+             <span class="input-group-addon" ><b>€ HT</b></span>
+           </div>
+        </section>
+       </div>
+       <!-- NOM DU COLLABORATEUR -->
+       <div class="clearfix form-group">
+        <section id="zonecollab" class="col-sm-6">
+           <label class="control-label" title="Saisir le nom du collaborateur">*Identité du collaborateur:</label>
+           <input id="collab" name="" class="form-control" placeholder="Saisir l'identité du collaborateur" type="text" required>
+        </section>
+       </div>
+       <!-- DATE DE DEBUT DE LIVRAISON / DATE DE FIN DE LIVRAISON / ADRESSE DE LIVRAISON -->
+       <div class="clearfix form-group">
+        <section class="col-sm-3">
+           <label id="lbldatedebutlivraison" class="control-label" >*Date de début de livraison:</label>
+           <div class="input-group date">
+            <input id="datedebutlivraison" type="text" class="form-control" placeholder="Choisir une date" required>
+            <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+           </div>
+        </section>
+        <section id="zonedatefinlivraison" class="col-sm-3">
+           <label class="control-label" >*Date de fin de livraison:</label>
+           <div class="input-group date">
+            <input id="datefinlivraison" type="text" class="form-control" placeholder="Choisir une date" required>
+            <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+           </div>
+        </section>
+        <section class="col-sm-6">
+           <label class="control-label" data-toggle="tooltip" data-placement="bottom" title="">*Adresse de livraison:</label>
+           <textarea id="adresselivraison" type="textarea" class="form-control" rows="5" required></textarea>
+        </section>
+        </div>
+       <!-- CONDITION DE REGLEMENT -->
+       <!--<div class="clearfix form-group">
+        <section class="col-sm-12">
+           <label class="control-label">*Condition de règlement:</label>
+           <textarea id="conditionreglement" type="textarea" class="form-control" rows="4" required></textarea>
+        </section>
+       </div>-->
+       <!-- DEVIS -->
+       <BR>
+       <div class="clearfix form-group">
+        <section class="col-sm-12, has-error">
+           <label class="control-label">*Devis:</label>
+           <div class="bootstrap-filestyle input-group">
+             <span class="group-span-filestyle " tabindex="0">
+               <label for="filestyle-0" class="btn btn-default ">
+                 <span class="glyphicon glyphicon-folder-open"></span>
+                 <span class="buttonText">Associer le document</span>
+                 <span id="badge_files" class="badge"></span>
+               </label>
+             </span>
+           </div>
+           <div id="drive_id_files" style="display:none"></div>
+           <!--<input id="drive_id_files" style="display:none" readonly>-->
+           <div class="col-sm-6">
+             <label class="control-label" id="name_file">
+             </label>
+           </div>
+        </section>
+       </div>
+         <legend>Commentaire ajouté à la demande d'achat</legend>
+         <div class="clearfix form-group">
+            <textarea id="mail" type="textarea" class="form-control" rows="7" ></textarea>
+            <small class="help-block">Vous pouvez utiliser les balises HTML pour une mise forme de votre le message(ex.&lt;h2&gt;Lorem&lt;/h2&gt; &lt;b&gt;ipsum&lt;/b&gt; dolor &lt;u&gt;sit&lt;/u> amet)</small>
+             <div class="row">
+               <div class="col-sm-offset-6 col-sm-6">
+                  <button id="" class="pull-right btn btn-primary" type="submit">Créer la demande d'achat</button>
+               </div>
+             </div>
+         </div>
+</form>  <!--Fin du Formulaire 1 -->

@@ -1,0 +1,130 @@
+<script>
+/*********************************************
+BIBLIOTHEQUE JS POUR LA GESTION DE LA TIMELINE
+Auteur: EREMY
+Copyright 2015
+**********************************************/
+
+
+
+/*********************************************
+Fonction permettant de construire le flux html pour l'objet TimeLine
+Css requis : style-bootstrap-timeline.css
+[in]: objet historique
+[in]: non utilisé
+[out]: flux html encapsulé dans une balise <li> 
+**********************************************/
+function addtimeline(t){
+    var bull, o = t.split(';');
+    
+    switch(o[0]){
+      case 'INITIALISE' : bull ='<li>';
+                          bull+='<div class="timeline-badge info">';
+                          bull+='<i class="glyphicon glyphicon-chevron-left"></i></div>';
+                          break;
+      case 'PRISE EN COMPTE NIV 1' : bull ='<li class="timeline-inverted">';
+                                     bull+='<div class="timeline-badge info">';
+                                     bull+='<i class="glyphicon glyphicon-check"></i></div>';
+                                     break;
+      case 'VALIDEE NIV 1' : bull ='<li class="timeline-inverted">';
+                             bull+='<div class="timeline-badge success">';
+                             bull+='<i class="glyphicon glyphicon-ok"></i></div>';
+                             break;
+      case 'INVALIDEE NIV 1' : bull ='<li class="timeline-inverted">';
+                               bull+='<div class="timeline-badge danger">';
+                               bull+='<i class="glyphicon glyphicon-remove"></i></div>';
+                               break;
+      case 'PRISE EN COMPTE NIV 2' : bull ='<li>';
+                                     bull+='<div class="timeline-badge info">';
+                                     bull+='<i class="glyphicon glyphicon-check"></i></div>';
+                                     break;
+      case 'VALIDEE NIV 2' : bull ='<li>';
+                             bull+='<div class="timeline-badge success">';
+                             bull+='<i class="glyphicon glyphicon-ok"></i></div>';
+                             break;
+      case 'INVALIDEE NIV 2' : bull ='<li>';
+                               bull+='<div class="timeline-badge danger">';
+                               bull+='<i class="glyphicon glyphicon-remove"></i></div>';
+                               break;
+      case 'PRISE EN COMPTE COMPTA FOURNISSEUR' : bull ='<li class="timeline-inverted">';bull+='<div class="timeline-badge info">';
+                                                  bull+='<i class="glyphicon glyphicon-check"></i></div>';
+                                                  break;
+      case 'BDC GENERE' : bull ='<li class="timeline-inverted">';bull+='<div class="timeline-badge warning">';
+                          bull+='<i class="glyphicon glyphicon-file"></i></div>';
+                          break;
+      case 'VALIDEE NIV 3' : bull ='<li class="timeline-inverted">';bull+='<div class="timeline-badge success">';
+                             bull+='<i class="glyphicon glyphicon-ok"></i></div>';
+                             break;
+      case 'INVALIDEE NIV 3' : bull ='<li class="timeline-inverted">';bull+='<div class="timeline-badge danger">';
+                               bull+='<i class="glyphicon glyphicon-remove"></i></div>';
+                               break;
+      case 'APP MIS A JOUR' : bull ='<li>';bull+='<div class="timeline-badge info">';
+                              bull+='<i class="glyphicon glyphicon-log-in"></i></div>';
+                              break;
+      case 'BDC TRANSMIS' : bull ='<li>';bull+='<div class="timeline-badge success">';
+                            bull+='<i class="glyphicon glyphicon-envelope"></i></div>';
+                            break;
+      default: bull='<li class="timeline-inverted">';
+               bull+='<div class="timeline-badge primary">';
+               bull+='<i class="glyphicon glyphicon-info-sign"></i></div>';
+    }
+    bull+='      <div class="timeline-panel">';
+    bull+='<div class="timeline-heading">';
+    bull+='<h5 class="timeline-title">'+o[0]+'</h4>';
+    if(o[4]) bull+='<p><a target="_blank" href="'+o[4]+'"><i class="glyphicon glyphicon-file"></i>Bon de commande</a></p>'
+    bull+='<p><small class="text-muted"><i class="glyphicon glyphicon-time"></i> '+o[2]+' by '+o[1]+'</small></p>';
+    bull+='</div>';
+    bull+='<div class="timeline-body">';
+    if(o[3]) bull+='<p>'+o[3]+'</p>'
+    bull+=' </div>';
+    bull+='</div>';
+    bull+='</li>';
+
+    return bull;
+ }
+ 
+
+/*********************************************
+Fonction permettant de construire le flux html pour l'objet TimeLine
+Css requis : style-bootstrap-timeline.css
+[in]: objet historique
+[in]: non utilisé
+[out]: flux html encapsulé dans une balise <li> 
+**********************************************/
+function info_timeline(t){
+  var bull, o = t.split(';');
+  bull ='<li>';
+  bull+='<div class="infoda-panel">';
+  
+  bull+='<p><small class="text-muted"><span class="marge"><i>N° DA : </i>'+o[0].replace("{","")+'</span>';
+  if(o[1]) bull+='<span class="marge"><i>N° Bon de commande : </i>'+o[1]+'</span>';
+  bull+='<span class="marge"><i>Demandeur : </i>'+o[2]+'</span>';
+  bull+='<span class="marge"><i>Type : </i>'+o[3]+'</span></p>';
+  bull+='</small></p>';
+
+  bull+='<p><span class="marge"><small class="text-muted"><i>Nature de la demande : </i>'+o[4]+'</small></span></p>';
+  
+  bull+='<p><small class="text-muted"><span class="marge"><i>Fournisseur : </i>'+o[5]+'</span>';
+  bull+='<span class="marge"><i>BU Imputation : </i>'+o[6]+'</span>';
+  if(o[7]) bull+='<span class="marge"><i>Code projet : </i>'+o[7]+'</span>';
+  bull+='</small></p>';
+  
+  bull+='<p><small class="text-muted"><span class="marge"><i>Quantité : </i>'+o[8]+'</span>';
+  bull+='<span class="marge"><i>Prix unitaire/TJM Achat : </i>'+o[9]+' HT</span>';
+  if(o[10]) bull+='<span class="marge"><i>Prix unitaire/TJM Vendu : </i>'+o[10]+' HT</span>';
+  if(o[11]) bull+='<span class="marge"><i>Marge : </i>'+o[11]+' %</span>';
+  bull+='</small></p>';
+  
+  bull+='<p><small class="text-muted">';
+  if(o[12]) bull+='<span class="marge"><i>Identité du collaborateur : </i>'+o[12]+'</span>';
+  bull+='<span class="marge"><i>Date de début de livraison : </i>'+o[13]+'</span>';
+  if(o[14]) bull+='<span class="marge"><i>Date de fin de livraison : </i>'+o[14]+'</span>';
+  bull+='</small></p>';
+
+  if(o[15].replace("}","")) bull+='<p><small class="text-muted"><span class="marge"><i>Condition de réglement : </i>'+o[15].replace("}","")+'</span></small></p>';
+
+  bull+='</div>';
+  bull+='</li>';
+  return bull;
+}
+</script>

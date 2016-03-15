@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<meta name="google-site-verification" content="YyJGIV3p5TTgJUC1qaifBbeQNdWCfqz8bdRtwY87EnA" />
+<!--?!= include('bootstrap_block'); ?-->
+<!-- Appel de l'api google drive -->
+<script type="text/javascript" src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/css/datepicker3.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<style type="text/css">
+ [class*="col -"] {
+ background-color: lightgreen;
+ border: 1px solid black;
+ border-radius: 6px;
+ line-height: 40px;
+}
+ .jumbotron {
+    padding: 0.5em 0.6em;
+    h1 {
+        font-size: 2em;
+    }
+    p {
+        font-size: 1.2em;
+        .btn {
+            padding: 0.5em;
+        }
+    }
+  }
+ body{ 
+    
+    padding-top: 70px;
+    padding-bottom: 70px;
+    }
+ 
+ .footer {
+  
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+</style>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="" href="<?=ScriptApp.getService().getUrl()?>">
+        <img alt="Brand" src="http://www.sqli-enterprise.com/files/2014/05/logo_sqli_entreprise_340x156_bg_transp1.png" height="50">
+      </a>
+    </div>
+    <p class="navbar-text"><?=Session.getActiveUser().getEmail()?></p>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
+    
+      <span class="navbar-brand navbar-nav navbar-right">Formulaire de suivi d'une demande d'achat : <b>MANAGER BU</b></span>
+    
+    </div><!-- /.navbar-collapse -->
+  </div>
+</div>
+<div class="container">  
+    <?!=HtmlService.createHtmlOutputFromFile('wait').getContent(); ?>
+    <div class="jumbotron" style="display:none">
+      <?var ref=reference;?>
+      <h2></h2>
+      <p>Ce formulaire fait suite à l'envoi d'une demande d'achat que <b id="emetteur"></b> vous a adress&eacute; derni&egrave;rement.</p>
+      <p>Le Bon Pour Facturation est accessible <a id="urlBPF" target="_blank" href="">ici</a>.</p>
+      <p>Merci de poursuivre son traitement ci-dessous</p>
+    </div>
+    <div id="error" class="alert alert-warning" role="alert" style="display:none"></div>
+    <div id="success" class="alert alert-success" role="alert" style="display:none"></div>
+    <?!=HtmlService.createHtmlOutputFromFile('contact').getContent(); ?>
+    <div class="row ">
+        <div class="col-md-offset-2 col-md-8">
+              <div id="select_response" class="" style="display:none" data-param_type="<?=type?>">
+                  <div class="col-md-4" data-val="true">
+                   <div class="thumbnail">
+                    <div class="caption">
+                     <span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true" style="font-size: 2em;"></span>
+                     <p class="text-uppercase" align="center">Je valide le Bon pour Facturation</p>
+                     <p class="text-center"><input    data-val-required="The IsMyUnit field is required." id="IsMyUnit" name="A" type="radio" value="True"></p>
+                    </div>
+                   </div>
+                  </div>
+                  <div class="col-md-4" data-val="false">
+                   <div class="thumbnail ">
+                    <div class="caption">
+                     <span class="glyphicon glyphicon glyphicon-remove" aria-hidden="true" style="font-size: 2em;"></span>
+                     <p class="text-uppercase" align="center">Je ne valide pas le Bon pour Facturation</p>
+                     <p class="text-center"><input   data-val-required="The IsMyUnit field is required." id="IsMyUnit" name="A" type="radio" value="False"></p>
+                    </div>
+                   </div>
+                  </div>
+              </div>
+          </div> <!-- End class class="col-md-offset-2 col-md-8" -->
+       </div>  <!-- End row -->
+       <div class="row ">
+          <div class="col-md-offset-2 col-md-8">       
+              <!------------------------------------>
+              <!-- Validation Niv 1 : Manager BU -->
+              <!------------------------------------>
+              <form id="form_true" class="form-horizontal" style="display:none"  > <!--form-horizontal-->   
+                 <div class="form-group" style="display:none">
+                   <label class="col-sm-3 control-label">Identifiant</label>
+                   <div class="col-md-9">
+                       <input id="identifiant" class="form-control" type="text" value="<?=ref?>" style="display:none" readonly>
+                   </div>
+                 </div>
+                  <div class="form-group">
+                   <label for="commentaire" class="col-sm-3 control-label">Votre message</label>
+                   <div class="col-md-9">
+                      <textarea id="commentaire_manager_ok" type="textarea" class="form-control" rows="7" ></textarea>
+                      <small class="help-block">Texte du mail qui sera envoyé aux acteurs de la demande</small>
+                   </div>
+                 </div>
+                <div class="clearfix form-group">
+                 <section class="col-md-offset-3 col-md-9">
+                    <button id="btn_val" class="pull-left btn btn-primary" type="submit">Valider</button>
+                 </section>
+                </div>
+              </form> <!---- Validation Niv 1 : Manager BU -->
+              <!-------------------------------------->
+              <!-- Invalidation Niv 1 : Manager BU -->
+              <!-------------------------------------->
+             <form id="form_false" class="form-horizontal" style="display:none"  > <!--form-horizontal-->
+             <div class="form-group" style="display:none">
+                   <label class="col-sm-3 control-label">Identifiant</label>
+                   <div class="col-md-9">
+                       <input id="identifiant" class="form-control" type="text" value="<?=ref?>" style="display:none" readonly>
+                   </div>
+                 </div>
+                  <div class="form-group">
+                   <label for="commentaire" class="col-sm-3 control-label">Le motif du refus</label>
+                   <div class="col-md-9">
+                      <textarea id="commentaire_manager_ko" type="textarea" class="form-control" rows="7" required></textarea>
+                      <small class="help-block">Texte du mail qui sera envoyé aux acteurs de la demande</small>
+                   </div>
+                 </div>
+                <div class="clearfix form-group">
+                 <section class="col-md-offset-3 col-md-9">
+                    <button id="btn_val" class="pull-left btn btn-primary" type="submit">Valider</button>
+                 </section>
+                </div>
+             </form> <!---- Invalidation Niv 1 : Manager BU -->
+         </div> <!-- div col-md-offset-2 col-md-8 -->
+       </div> <!-- div row -->
+<div> <!-- End Container -->
+<!-- Latest compiled and minified JavaScript -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/bootstrap-datepicker.min.js"></script>
+<script  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/locales/bootstrap-datepicker.fr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
+<?!= HtmlService.createTemplateFromFile('footer').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<?!= HtmlService.createTemplateFromFile('jQueryFunctions').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<script>
+$(function(){
+console.log('Ready!:%s',$('#select_response').data('param_type'));
+//******************************************************************************************************
+// Affiche les donnees de la balise H2 (ID + Fournisseur)
+// Affiche la zone de message + la zone de choix d'action
+// avec recuperation de donnees de la DA (depuis le Spreadsheet)
+//******************************************************************************************************
+google.script.run
+     .withSuccessHandler(function(values){
+                           $('.jumbotron h2').html(values.id + ' / ' + values.fournisseur);
+                           $('.jumbotron b#emetteur').html(values.emetteur);
+                           $(".jumbotron a#urlBPF").attr("href", values.urlBPF);
+                           $('.jumbotron').show();
+                           $('#select_response').show();
+                           })
+     .withFailureHandler(function(e){$('.jumbotron').hide();$('#error').html('<h1>Erreur!</h1><br>'+e);$('#error').show();})
+     .getInfoDA( <?=ref?> );
+//******************************************************************************************************
+// Submit de l'invalidation Bon Pour Facturation   
+//******************************************************************************************************
+$("#form_false").on('submit',function(){ 
+  var message='';
+  // Masquer les zones d'affichage      
+  $('.jumbotron').hide();
+  $('#select_response').hide();
+  $(this).hide();
+  // Message En attente
+  $('#wait').modal({
+               keyboard: false,
+               backdrop: false
+  });
+  // Execution du traitement d'invalidation du Bon Pour Facturation de la demande d'achat            
+  /*google.script.run
+       .withSuccessHandler(function(value){
+             $('#wait').hide();
+             $('#success').html(value.message).show();         
+         })
+       .withFailureHandler(function(e){$('#wait').hide();$('#error').html('<h1>Warning!</h1>'+e);$('#error').show();})
+       .onInvalidateNiv1(this);*/
+  return false;
+});
+         
+//******************************************************************************************************
+// Submit de la validation Bon Pour Facturation   
+//******************************************************************************************************
+$("#form_true").on('submit',function(){ 
+  var message='';
+  // Masquer les zones d'affichage      
+  $('.jumbotron').hide();
+  $('#select_response').hide();
+  $(this).hide();
+  // Message En attente
+  $('#wait').modal({
+               keyboard: false,
+               backdrop: false
+  });
+  // Execution du traitement Validation du Bon Pour Facturation de la demande d'achat            
+  /*google.script.run
+         .withSuccessHandler(function(value){
+             $('#wait').hide();
+             $('#success').html(value.message).show();
+         })
+         .withFailureHandler(function(e){$('#wait').hide();$('#error').html('<h1>Warning!</h1>'+e);$('#error').show();})
+         .onValidateNiv1(this);*/
+  return false;
+});
+
+});
+</script>

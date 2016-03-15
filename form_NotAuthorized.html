@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta name="google-site-verification" content="YyJGIV3p5TTgJUC1qaifBbeQNdWCfqz8bdRtwY87EnA" />
+<!--?!= include('bootstrap_block'); ?-->
+<!-- Appel de l'api google drive -->
+<script type="text/javascript" src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/css/datepicker3.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<style type="text/css">
+ [class*="col -"] {
+ background-color: lightgreen;
+ border: 1px solid black;
+ border-radius: 6px;
+ line-height: 40px;
+}
+ .jumbotron {
+    padding: 0.5em 0.6em;
+    h1 {
+        font-size: 2em;
+    }
+    p {
+        font-size: 1.2em;
+        .btn {
+            padding: 0.5em;
+        }
+    }
+  }
+ body{ 
+    
+    padding-top: 70px;
+    padding-bottom: 70px;
+    }
+ 
+ .footer {
+  
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+</style>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="" href="<?=ScriptApp.getService().getUrl()?>">
+        <img alt="Brand" src="http://www.sqli-enterprise.com/files/2014/05/logo_sqli_entreprise_340x156_bg_transp1.png" height="50">
+      </a>
+    </div>
+    <p class="navbar-text"><?=Session.getActiveUser().getEmail()?></p>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
+      <span class="navbar-brand navbar-nav navbar-right">Formulaire de suivi d'une demande d'achat</span>
+    </div><!-- /.navbar-collapse -->
+  </div>
+</div>
+<div class="container">  
+    <?!=HtmlService.createHtmlOutputFromFile('wait').getContent(); ?>
+    <div id="error" class="alert alert-warning" role="alert" style="display:none">
+     <?var ref=reference;?>
+     <h2></h2>
+     <p>Vous n'êtes pas autorisé à réaliser l'action courante.</p>
+     <p>Merci.</p>
+    </div>
+    <div id="success" class="alert alert-success" role="alert" style="display:none"></div>
+    <?!=HtmlService.createHtmlOutputFromFile('contact').getContent(); ?>
+<div> <!-- End Container -->
+<!-- Latest compiled and minified JavaScript -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/bootstrap-datepicker.min.js"></script>
+<script  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/locales/bootstrap-datepicker.fr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
+<?!= HtmlService.createTemplateFromFile('footer').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<?!= HtmlService.createTemplateFromFile('jQueryFunctions').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<script>
+$(function(){
+console.log('Ready!:%s',$('#select_response').data('param_type'));
+//******************************************************************************************************
+// Affiche les donnees de la balise H2 (ID + Fournisseur)
+// Affiche la zone de message
+// avec recuperation de donnees de la DA (depuis le Spreadsheet)
+//******************************************************************************************************
+google.script.run
+     .withSuccessHandler(function(values){
+                           $('.alert-warning h2').html(values.id + ' / ' + values.fournisseur);
+                           $('.alert-warning').show();
+                           })
+     .withFailureHandler(function(e){$('.jumbotron').hide();$('#error').html('<h1>Erreur!</h1><br>'+e);$('#error').show();})
+     .getInfoDA( <?=ref?> );
+});
+</script>

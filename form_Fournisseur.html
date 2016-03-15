@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<meta name="google-site-verification" content="YyJGIV3p5TTgJUC1qaifBbeQNdWCfqz8bdRtwY87EnA" />
+<!--?!= include('bootstrap_block'); ?-->
+<!-- Appel de l'api google drive -->
+<script type="text/javascript" src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/css/datepicker3.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+<?!=HtmlService.createHtmlOutputFromFile('fournisseurCss').getContent(); ?>
+<style type="text/css">
+ [class*="col -"] {
+ background-color: lightgreen;
+ border: 1px solid black;
+ border-radius: 6px;
+ line-height: 40px;
+}
+ .jumbotron {
+    padding: 0.5em 0.6em;
+    h1 {
+        font-size: 2em;
+    }
+    p {
+        font-size: 1.2em;
+        .btn {
+            padding: 0.5em;
+        }
+    }
+  }
+ body{ 
+    
+    padding-top: 70px;
+    padding-bottom: 70px;
+    }
+ 
+ .footer {
+  
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+</style>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="" href="<?=ScriptApp.getService().getUrl()?>">
+        <img alt="Brand" src="http://www.sqli-enterprise.com/files/2014/05/logo_sqli_entreprise_340x156_bg_transp1.png" height="50">
+      </a>
+    </div>
+    <p class="navbar-text"><?=Session.getActiveUser().getEmail()?></p>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
+      <span class="navbar-brand navbar-nav navbar-right">Gestion Fournisseur</span>
+    </div><!-- /.navbar-collapse -->
+  </div>
+</div>
+<div class="container">  
+    <div id="wait" class="modal fade" style="display:none">
+      <div class="modal-dialog">
+        <div class="modal-content">
+    
+          <div class="modal-body">
+            <p>Traitement en cours . . .</p>
+            <img style="display: block;margin-left: auto;margin-right: auto" src='http://preloaders.net/preloaders/496/Flip%20Flop.gif'>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <div class="jumbotron" style="">
+      <h2></h2>
+      <p>Cette fonctionnalité permet de réaliser une demande de création de fournisseur.</p>
+      <p>Le processus de création s'effectue en 2 étapes :</p>
+    </div>
+    <div id="error" class="alert alert-warning" role="alert" style="display:none"></div>
+    <div id="success" class="alert alert-success" role="alert" style="display:none"></div>
+    <?!=HtmlService.createHtmlOutputFromFile('contact').getContent(); ?>
+    <div class="row">
+        <div class="row step col-md-offset-3">
+            <div id="div1" class="col-md-4 activestep" onclick="javascript: resetActive(event, 0, 'step-1');">
+                <p>Etape 1</p>
+                <span class="fa fa-download"></span>
+                <p>Télécharger le formulaire de création</p>
+            </div>
+            <div class="col-md-4" onclick="javascript: resetActive(event, 20, 'step-2');">
+                <p>Etape 2</p>
+                <span class="fa fa-envelope"></span>
+                <p>Transmettre le formulaire et le RIB</p>
+            </div>
+        </div>
+    </div>
+    <div class="row ">
+      <div class="row setup-content step activeStepInfo" id="step-1">
+        <div class="col-md-offset-2 col-xs-12">
+          <div class="col-md-8 well">
+            <h1>ETAPE 1</h1>
+            <h3 class="underline">Instructions</h3>
+            <div class="form-group" style="text-align:left">
+              <span class="fa fa-check-circle-o"></span>&nbsp;Téléchargez le <a href="<?!=getFicheFournisseurLink(); ?>">formulaire</a> de demande de création d'un fournisseur.<BR>
+            </div>
+            <div class="form-group" style="text-align:left">
+              <span class="fa fa-check-circle-o"></span>&nbsp;Renseignez l'ensemble des informations présentes dans le formulaire.<BR>
+            </div>
+            <div class="form-group" style="text-align:left">
+              <span class="fa fa-check-circle-o"></span>&nbsp;Munissez-vous du RIB du fournisseur au format numérique.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row ">
+      <?!= HtmlService.createTemplateFromFile('uploadDocument').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+      <div class="row setup-content step hiddenStepInfo" id="step-2">
+        <div class="col-md-offset-2 col-xs-12">
+          <div class="col-md-8 well">
+            <h1>ETAPE 2</h1>
+            <h3 class="underline">Instructions</h3>
+            <form id="form_true" class="form-horizontal">
+              <div class="form-group" style="text-align:left">
+                <span class="fa fa-check-circle-o"></span>
+                &nbsp;Uploadez le formulaire de demande de création de fournisseur (format PDF <span class="fa fa-file-pdf-o"></span>)
+                <div id="upload1" class="bootstrap-filestyle input-group">
+                  <span class="group-span-filestyle " tabindex="0">
+                    <label for="filestyle-0" class="btn btn-default ">
+                      <span class="glyphicon glyphicon-folder-open"></span>
+                      <span class="buttonText">Associer le document</span>
+                      <span id="badge_files" class="badge"></span>
+                    </label>
+                  </span>
+                </div>
+                <input id="drive_id_files" style="display:none" readonly>
+                <div class="col-md-offset-3 col-sm-6">
+                  <label class="control-label" id="name_file">
+                  </label>
+                </div>
+              </div>
+              <div class="form-group" style="text-align:left">
+                <span class="fa fa-check-circle-o"></span>
+                &nbsp;Uploadez le RIB du fournisseur (format PDF <span class="fa fa-file-pdf-o"></span>)
+                <div id="upload2" class="bootstrap-filestyle input-group">
+                  <span class="group-span-filestyle " tabindex="0">
+                    <label for="filestyle-0" class="btn btn-default ">
+                      <span class="glyphicon glyphicon-folder-open"></span>
+                      <span class="buttonText">Associer le document</span>
+                      <span id="badge_files2" class="badge"></span>
+                    </label>
+                  </span>
+                </div>
+                <input id="drive_id_files2" style="display:none" readonly>
+                <div class="col-md-offset-3 col-sm-6">
+                  <label class="control-label" id="name_file2">
+                  </label>
+                </div>
+              </div>
+              <div class="clearfix form-group">
+               <section class="col-md-offset-4 col-md-9">
+                  <button id="btn_val" class="pull-left btn btn-primary" >Transmettre les documents</button>
+               </section>
+              </div>              
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+<div> <!-- End Container -->
+<!-- Latest compiled and minified JavaScript -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/bootstrap-datepicker.min.js"></script>
+<script  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/locales/bootstrap-datepicker.fr.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
+<?!= HtmlService.createTemplateFromFile('footer').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<?!= HtmlService.createTemplateFromFile('jQueryFunctions').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<script type="text/javascript">
+    function resetActive(event, percent, step) {
+        $('#error').hide();
+        $("div").each(function () {
+            if ($(this).hasClass("activestep")) {
+                $(this).removeClass("activestep");
+            }
+        });
+        if (event.target.className == "col-md-4") {
+            $(event.target).addClass("activestep");
+        }
+        else {
+            $(event.target.parentNode).addClass("activestep");
+        }
+        hideSteps();
+        showCurrentStepInfo(step);
+    }
+
+    function hideSteps() {
+        $("div").each(function () {
+            if ($(this).hasClass("activeStepInfo")) {
+                $(this).removeClass("activeStepInfo");
+                $(this).addClass("hiddenStepInfo");
+            }
+        });
+    }
+
+    function showCurrentStepInfo(step) {        
+        var id = "#" + step;
+        $(id).addClass("activeStepInfo");
+    }
+</script>
+<script>
+$(function(){
+console.log('Ready!');
+//******************************************************************************************************
+// Appel de la fonction getOAuthToken() sur le bouton de telechargement de document
+//******************************************************************************************************
+$('#upload1').on('click',function(){
+  google.script.run.withSuccessHandler(createPicker)
+      .withFailureHandler(function(e){console.log(e);}).getOAuthToken();
+});
+
+$('#upload2').on('click',function(){
+    google.script.run.withSuccessHandler(createPicker2)
+        .withFailureHandler(function(e){console.log(e);}).getOAuthToken();
+});
+
+//******************************************************************************************************
+// Submit de la validation Niv 1   
+//******************************************************************************************************
+$("#form_true").on('submit',function(){ 
+  var bln_suite=true;
+  var msg='';
+  
+  // Controle des donnees obligatoire (celles non realise avant l'appel de la fonction Valider)
+  if ($('#drive_id_files').val() == '') {
+     // Pas de facture telecharge
+     msg+="Le formulaire de demande de création du fournisseur n'a pas été intégré à la demande.";
+     bln_suite=false;
+  } 
+  if ($('#drive_id_files2').val() == '') {
+    if (msg != '') msg+='<BR>'
+    msg+="Le RIB du fournisseur n'a pas été intégré à la demande.";
+    bln_suite=false;
+  }
+  if (bln_suite) {
+    // Masquer les zones d'affichage      
+    $('.jumbotron').hide();
+    $('.row').hide();
+    $(this).hide();
+    // Message En attente
+    $('#wait').modal({
+               keyboard: false,
+               backdrop: false
+    });
+  // Execution du traitement Validation Niv 1 de la demande d'achat            
+  google.script.run
+         .withSuccessHandler(function(value){
+             $('#wait').hide();
+             $('#success').html(value.message).show();
+         })
+         .withFailureHandler(function(e){$('#wait').hide();$('#error').html('<h1>Warning!</h1>'+e);$('#error').show();})
+         .MailingCreationFournisseur($("#form_true #drive_id_files").val(),$("#form_true #drive_id_files2").val());
+  } else {
+     $('#wait').modal('hide');
+     $('#error').html(msg);
+     $('#error').show();
+   }
+   return false;
+});
+
+});
+</script>

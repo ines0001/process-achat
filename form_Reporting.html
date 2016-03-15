@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<!-- Exemple Modele : http://leapfrogui.com/controlfrog/cf/layouts/w/layout-1.html  -->
+
+<head>
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <!-- Custom Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <?!=HtmlService.createHtmlOutputFromFile('reportingCss').getContent(); ?>
+</head>
+<style>
+  body{ 
+      
+      padding-top: 70px;
+      padding-bottom: 70px;}
+   .footer {
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 60px;
+    background-color: #f5f5f5;
+  }
+</style>
+<body>
+  <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="navbar-header">
+      <a class="" href="<?=ScriptApp.getService().getUrl()?>">
+      <img alt="Brand" style="background-color: white;" src="http://www.sqli-enterprise.com/files/2014/05/logo_sqli_entreprise_340x156_bg_transp1.png" height="50">
+      </a>
+    </div>
+    <p class="navbar-brand navbar-nav navbar-view"><span id="symbol_admin"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></span>&nbsp;<?=Session.getActiveUser().getEmail()?>&nbsp;<span id="connecting"></span></p>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
+      <span class="navbar-right timeline-badge info"><i class="glyphicon glyphicon-check"></i></span>
+      <span class="navbar-brand navbar-nav navbar-right"><span class="navbar-view">Formulaire de suivi d'une demande d'achat : </span><b>REPORTING</b></span> 
+    </div><!-- /.navbar-collapse -->
+  </div>
+    <div class="container-fluid">
+      <!-- Page Heading -->
+      <div class="row">
+          <a id="btnrefresh" class="btn btn-primary  pull-right" data-toggle="tooltip" data-placement="top" title="Pour recharger la liste cliquer sur le bouton" role="button"><h4><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span><b></b></h4></a>
+          <a class="btn btn-success  pull-right" href="<?=ScriptApp.getService().getUrl() + '?page=new' ?>" target="_blank" data-toggle="tooltip" data-placement="top" title="Pour créer une nouvelle demande, cliquer sur ce lien" role="button"><h4><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span><b>&nbsp;Nouvelle demande</b></h4></a>
+          <!--?!=HtmlService.createHtmlOutputFromFile('dashboard-bloc-indicators').getContent(); ?-->
+          <ul class="nav nav-tabs nav-pills nav-justified" role="tablist">
+            <li role="presentation" class="active">
+              <a href="#table_synthese_emise" aria-controls="table_synthese_emise" role="tab" data-toggle="tab" data-link="">
+                <h4>
+                  <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                    &nbsp;BDC EN GENERATION&nbsp;
+                  <span id="num_init"></span>
+                </h4>
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#table_synthese_inprogress" aria-controls="table_synthese_inprogress" role="tab" data-toggle="tab" data-link="">
+                <h4>
+                  <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
+                  &nbsp;BDC ACTIFS&nbsp;
+                  <span id="num_inprogress"></span>
+                </h4>
+              </a>
+            </li>
+            <li role="presentation">
+              <a href="#table_synthese_finale" aria-controls="table_synthese_won_lost" role="tab" data-toggle="tab" data-link="">
+                <h4>
+                  <span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
+                    &nbsp;BDC CLOS&nbsp;
+                  <span id="num_clos"></span>
+                </h4>
+               </a>
+            </li>
+          </ul>
+      </div>
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane fade in active" id="table_synthese_emise">  
+            <div id="id_table"><br/><label>Recherche En cours. Merci de patientez...</label></div>
+         </div>
+         <div role="tabpanel" class="tab-pane fade" id="table_synthese_inprogress">
+            <div id="id_table2"><br/><label>Recherche En cours. Merci de patientez...</label></div>
+         </div>
+         <div role="tabpanel" class="tab-pane fade" id="table_synthese_finale">
+            <div id="id_table3"><br/><label>Recherche En cours. Merci de patientez...</label></div>
+         </div>
+      </div>
+    </div>
+    <!-- /.container-fluid -->
+    <?!=HtmlService.createHtmlOutputFromFile('contact').getContent(); ?>
+ </body>
+ 
+<?!=HtmlService.createHtmlOutputFromFile('JSFunctions').getContent(); ?>
+
+<!-- jQuery -->
+ <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+ <script  src="https://cdnjs.cloudflare.com/ajax/libs/jquery-dateFormat/1.0/jquery.dateFormat.min.js"></script>
+ <?!= HtmlService.createTemplateFromFile('footer').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+ 
+ <!-- Bootstrap Core JavaScript -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script>
+
+$('.ticker').css('padding-right',$('.ticker-wrap').parent().width())
+
+google.script.run.withSuccessHandler(function(values){
+                    var out='';
+                    $.each(values,function(index,value){out+='<div class="ticker__item">'+value+'</div>'})
+                    $('.ticker').append(out)
+                  })
+                  .withFailureHandler(function(e){
+                    console.log('Exception'+e.message);     
+                  })
+                  .enumParams('Informations accueil');
+
+//******************************************************************************************************
+// Chargement de l'API Visualization et package Table
+//******************************************************************************************************
+google.load("visualization", "1.1", {packages:['table']});
+
+//******************************************************************************************************
+// Affichage du tableau de donnees en fonction de la requete parametree par onglet
+//******************************************************************************************************
+function drawTableByPanel() {
+     var opts = {sendMethod: 'auto'}, set_query, query;
+     google.script.run
+                .withSuccessHandler(function(isAdmin){ 
+                   console.log('admins:'+isAdmin)
+                   if(isAdmin) {
+                     $('#symbol_admin').html('<span class="glyphicon glyphicon-king" style="color:red" aria-hidden="true" ></span>');
+                     $('#connecting').html('#admin');
+                   }
+                   google.script.run
+                     .withSuccessHandler(function(values){ 
+                        var filter='.*';
+                        if(!isAdmin) filter += <?=Session.getActiveUser().getEmail()?>+'.*';
+                        for (var i=0; i < 3; i++) {
+                          set_query = encodeURIComponent(values[i].replace(/@user/g,filter));
+                          query = new google.visualization.Query(
+                            'https://spreadsheets.google.com/tq?tq='+set_query+'&key=<?=clsid?>',opts);
+                          switch(i) {
+                          case 0 : query.send(handleQueryTableOng1);
+                                   break;
+                          case 1 : query.send(handleQueryTableOng2);
+                                   break;
+                          case 2 : query.send(handleQueryTableOng3);
+                                   break;
+                          }
+                        }
+                     })
+                     .withFailureHandler(function(e){console.log('Exception'+e.message)})
+                     .enumParams('Reporting Request');
+                })
+                .withFailureHandler(function(e){
+                  console.log('Exception'+e.message);     
+                })
+                .isAdmin();
+    };
+    
+
+//******************************************************************************************************
+// Generation du tableau des donnees issues d'une requete Google Script + Gestion de la colonne "Action"
+// [E] data : donnees issues de la requete QUERY
+// [E] idonglet : identifiant de l'onglet
+// [E] titre : titre du tableau
+// [E] nameIdtable : nom HTML du div idTable (en fonction de l'onglet)
+// [E] nameNum : nom HTML du span #num (pour afficher le nombre de demandes trouvees)
+//******************************************************************************************************
+function handleQueryTable(data, idonglet, titre, nameIdtable, nameNum) {
+
+  google.script.run
+    .withSuccessHandler(function(values2){
+      var statutDde='';
+      var typeDemande='';
+      var urlDriveDA = '';
+      var chart = new google.visualization.Table(document.getElementById(nameIdtable));
+      var cssClassNames = {
+                  tableRow:'cssTableRow',
+                  oddTableRow:'cssOddTableRow', 
+                  selectedTableRow:'cssHoverRow', 
+                  hoverTableRow:'cssHoverRow', 
+                  headerCell:'cssHeaderCell',
+                  tableCell:'cssCell',
+                  rowNumberCell:'css8'
+      };
+      var options = {
+        title: titre
+        //,page:'enable'
+        //,pageSize: 20
+        ,allowHtml: true
+        //,showRowNumber: true
+        ,sortAscending:false
+        ,alternatingRowStyle:true
+        ,cssClassNames: cssClassNames
+      };
+      var dataDA='';
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+      Alimentation du nombre de DA paur l'onglet concerne
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+      $(nameNum).html( '<span class="badge">'+data.getNumberOfRows()+'</span>' );
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+      Recherche des positions des colonnes
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+      var i_historic; 
+      for(var i=0;i<data.getNumberOfColumns();i++){
+        
+        if(data.getColumnLabel(i).toLowerCase()=='historique') i_historic = i;
+        
+      }
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+      Mise en forme des colonnes datetime
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+  
+      //*************************************************
+      // N° de certaines colonnes de la requete Reporting
+      //*************************************************
+      // S.VIOT 02/12
+      //var idColonneURLDriveDA = 7;
+      //var idColonneURLFicheDA = 18;
+      //var idColonneURLDevis = 14;
+      //var idColonneURLBDCProv = 15;
+      //var idColonneURLBDCSign = 16;
+      //var idColonneIsValidationNiv2 = 8;
+      var idColonneURLDriveDA = 11;
+      var idColonneURLFicheDA = 22;
+      var idColonneURLDevis = 18;
+      var idColonneURLBDCProv = 19;
+      var idColonneURLBDCSign = 20;
+      var idColonneIsValidationNiv2 = 12;
+      var idColonneTypeDemande = 3;
+      var idColonneEtat = 4;
+      var idColonneIdDA = 0;
+      var idColonneResumeDA = 23;
+      
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+      Mise en forme de la colonne Action (detail historique, lien action, lien folder google drive)
+      Mise en forme de la colonne Avancement (regroupement de statut)
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+      data.addColumn('string', 'Avancement');
+      data.addColumn('string', 'Actions');
+      for(var i=0;i<data.getNumberOfRows();i++){
+        var ref=0,html_msg, html_action='', html_drive='', html_avancement='', urlDevis='', html_devis='', urlBDCProv='', urlBDCSign='', html_bdc='', urlFicheDA='', html_fiche='';
+        var histo = data.getValue(i,i_historic)
+                              .replace(/(["'])/g, function(m, group1) {
+                                  if (group1 == "" ) return m;
+                                  else {return "&apos;";}
+                                })
+                              .replace(/([\n])/g, function(m, group1) {
+                                  if (group1 == "" ) return m;
+                                  else {return "<br>";}
+                                });
+        
+        html_msg='<div class="btn-group dropup">';
+        html_msg+=(histo)?" <a href='#' data-url='"+histo+"' info-da='"+data.getValue(i,idColonneResumeDA)+"' class='btn btn-info  btn-xs'>":'<a href="#" class="btn btn-info  btn-xs disabled">';
+        html_msg+='  <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>';
+        html_msg+=' </a>';
+        html_msg+=' <a href="#" class="btn btn-default btn-xs dropdown-toggle"  id="dropdownAction" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"> Plus ';
+        html_msg+='  <span class="caret"></span>'
+        html_msg+=' </a>';
+        html_msg+=' <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownAction">';
+        // Recuperation de la donnee Type de demande presente dans la colonne n°3
+        typeDemande = data.getValue(i,idColonneTypeDemande);
+        // Recuperation de la donnee Statut presente dans la colonne n°4
+        statutDde = data.getValue(i,idColonneEtat);
+        switch(statutDde) {
+        case "INITIALISE" :                         html_action+= values2.initialise_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.initialise_2;
+                                                    break;
+        case "PRISE EN COMPTE NIV 1" :              html_action+= values2.priseEnCompteNiv1_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.priseEnCompteNiv1_2;
+                                                    break;
+        case "VALIDEE NIV 1" :                      // Test si la demande doit etre validee Niv 2
+                                                    if (data.getValue(i,idColonneIsValidationNiv2) == 'O') {
+                                                      // Validation Niv 2 necessaire
+                                                      html_action+= values2.valideeNiv1_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                      html_avancement = values2.valideeNiv1_2;
+                                                    } else {
+                                                      // Pas de validation necessaire
+                                                      html_action+= values2.valideeNiv2_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                      html_avancement = values2.valideeNiv2_2;
+                                                    }
+                                                    break;
+        case "INVALIDEE NIV 1" :                    html_action+= values2.invalideeNiv1_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.invalideeNiv1_2;
+                                                    break;
+        case "PRISE EN COMPTE NIV 2" :              html_action+= values2.priseEnCompteNiv2_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.priseEnCompteNiv2_2;
+                                                    break;
+        case "VALIDEE NIV 2" :                      html_action+= values2.valideeNiv2_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.valideeNiv2_2;
+                                                    break;
+        case "INVALIDEE NIV 2" :                    html_action+= values2.invalideeNiv2_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.invalideeNiv2_2;
+                                                    break;
+        case "PRISE EN COMPTE COMPTA FOURNISSEUR" : html_action+= values2.priseEnCompteComptaFournisseur_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.priseEnCompteComptaFournisseur_2;
+                                                    break;
+        case "BDC GENERE" :                         html_action+= values2.bdcGenere_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.bdcGenere_2;
+                                                    break;
+        case "VALIDEE NIV 3" :                      if (typeDemande == "Interne") {
+                                                      html_action+= values2.valideeNiv3_11.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                      html_avancement = values2.valideeNiv3_12;
+                                                    } else {
+                                                      html_action+= values2.valideeNiv3_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                      html_avancement = values2.valideeNiv3_2;
+                                                    }
+                                                    break;
+        case "INVALIDEE NIV 3" :                    html_action+= values2.invalideeNiv3_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.invalideeNiv3_2;
+                                                    break;
+        case "APP MIS A JOUR" :                     html_action+= values2.appMisAJour_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_avancement = values2.appMisAJour_2;
+                                                    break;
+        case "BDC TRANSMIS" :                       //html_action+= values2.bdcTransmis_1.replace("%%idDA%%",data.getValue(i,idColonneIdDA));
+                                                    html_action="";
+                                                    html_avancement = values2.bdcTransmis_2;
+                                                    break;
+        }
+        html_msg+= html_action;
+        if (html_action != '') html_msg+='  <hr>';
+        
+        // Recuperation de la donnee URL Drive DA
+        urlDriveDA = data.getValue(i,idColonneURLDriveDA);
+        if ((urlDriveDA != '') && (urlDriveDA != null)) {
+          html_drive+='  <li>';
+          html_drive+='   <a target="_blank" href="'+urlDriveDA+'">';
+          html_drive+='    <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>';
+          html_drive+='   &nbsp;Accès au Google Drive DA</a>';
+          html_drive+='  </li>';
+          html_msg+= html_drive;
+        }
+        // Recuperation de la donnee URL Fiche DA
+        urlFicheDA = data.getValue(i,idColonneURLFicheDA);
+        if ((urlFicheDA != '') && (urlFicheDA != null)) {
+          html_fiche+='  <li>';
+          html_fiche+='   <a target="_blank" href="'+urlFicheDA+'">';
+          html_fiche+='    <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>';
+          html_fiche+='   &nbsp;Fiche DA</a>';
+          html_fiche+='  </li>';
+          html_msg+= html_fiche;
+        }
+        // Recuperation de la donnee URL Devis
+        urlDevis = data.getValue(i,idColonneURLDevis);
+        if ((urlDevis != '') && (urlDevis != null)) {
+          html_devis+='  <li>';
+          html_devis+='   <a target="_blank" href="'+urlDevis+'">';
+          html_devis+='    <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>';
+          html_devis+='   &nbsp;Téléchargement du Devis</a>';
+          html_devis+='  </li>';
+          html_msg+= html_devis;
+        }
+        // Recuperation de la donnee URL BDC provisoire et BDC signe
+        urlBDCProv = data.getValue(i,idColonneURLBDCProv);
+        urlBDCSign = data.getValue(i,idColonneURLBDCSign);
+        if ((urlBDCProv != '') && (urlBDCProv != null)) {
+          if ((urlBDCSign != '') && (urlBDCSign != null)) {
+            html_bdc+='  <li>';
+            html_bdc+='   <a target="_blank" href="'+urlBDCSign+'">';
+            html_bdc+='    <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>';
+            html_bdc+='   &nbsp;Téléchargement du BDC signé</a>';
+            html_bdc+='  </li>';
+          } else {
+            html_bdc+='  <li>';
+            html_bdc+='   <a target="_blank" href="'+urlBDCProv+'">';
+            html_bdc+='    <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>';
+            html_bdc+='   &nbsp;Téléchargement du BDC provisoire</a>';
+            html_bdc+='  </li>';
+          }
+          html_msg+= html_bdc;
+        }
+        data.setValue(i,data.getNumberOfColumns()-1, html_msg );
+        data.setValue(i,data.getNumberOfColumns()-2, html_avancement );
+      }
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+      Mise en forme des entêtes de colonne
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/*/
+      for(var index=0;index<data.getNumberOfColumns();index++){
+        if(data.getColumnLabel(index).search('glyphicon')!=-1){
+          var labels = data.getColumnLabel(index).split(','), label;
+          label = '<span class="glyphicon '+labels[0]+'" aria-hidden="true"></span>&nbsp;';
+          if(labels.length>1) label+= labels[1];
+          data.setColumnLabel(index,label);
+        }
+      }
+      /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+      Si aucun élément dans la table alors afficher aucun dossier
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\\*/
+      if(data.getNumberOfRows()==0) { 
+        data.addRow();/*data.setValue(0, i_statut, 'Aucun dossier')*/
+      }
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        Masquer les éventuelles colonnes pour le traitement des actions
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+      // Suppression de la colonne Historique
+      data.removeColumn(i_historic);
+      // Suppression de la colonne URL Drive DA, Acces, isValidationNiv2,Url Devis, BDC provisoire et BDC signé, Fiche DA, Resume DA
+      // S.VIOT 02/12
+      //data.removeColumn(7);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      data.removeColumn(11);
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        Generation du chart & mise en place de listener sur les etats (ready, sort) du chart
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/ 
+      var view = new google.visualization.DataView(data);
+      google.visualization.events.addListener(chart, 'ready', myReadyHandler);
+      chart.draw(view, options);
+      google.visualization.events.addListener(chart, 'sort', myReadyHandler);
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        REGLES D'AJUSTEMENT DES COLONNES
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/ 
+      // S/VIOT 02/12
+      $('#'+nameIdtable+' .cssHeaderCell:contains("DA")').css('width', '8%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("BDC")').css('width', '4%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("Demandeur")').css('width', '9%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("BU")').css('width', '4%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("Nature")').css('width', '15%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("Montant")').css('width', '5%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("Marge")').css('width', '4%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("Projet")').css('width', '5%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("Avancement")').css('width', '10%');
+      $('#'+nameIdtable+' .cssHeaderCell:contains("Actions")').css('width', '6%');
+      $('.dropup').parents().css('overflow', 'visible');
+      /*/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+        ACTIVATION DU BTN REFRESH
+      /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\//\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/
+      //$("#btnrefresh").attr("disabled", false);
+    })
+    .withFailureHandler(function(e){console.log('Exception'+e.message)})
+    // Recuperation de la liste generee d'actions en fonction du statut d'une demande
+    .generateInformationByStatus();
+}
+//******************************************************************************************************
+// Generation du Google Chart Table (Onglet Emise(s))
+//******************************************************************************************************
+function handleQueryTableOng1(response) {
+  if (response.isError()) {
+    alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    return;
+  }
+  // Recuperation des donnees de la requete
+  var data = response.getDataTable();
+  // Generation du tableau de donnees et des colonnes dediees
+  handleQueryTable(data, "R_EMISE",'Demande(s) initialisée(s)', 'id_table', '#num_init')
+}
+
+//******************************************************************************************************
+// Generation du Google Chart Table (Onglet En cours)
+//******************************************************************************************************
+function handleQueryTableOng2(response) {
+  if (response.isError()) {
+    alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    return;
+  }
+  // Recuperation des donnees de la requete
+  var data = response.getDataTable();
+  // Generation du tableau de donnees et des colonnes dediees
+  handleQueryTable(data, "R_ENCOURS", 'Demande(s) en cours', 'id_table2', '#num_inprogress')
+}
+    
+//******************************************************************************************************
+// Generation du Google Chart Table (Onglet Termine(s))
+//******************************************************************************************************
+function handleQueryTableOng3(response) {
+  if (response.isError()) {
+    alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    return;
+  }
+  // Recuperation des donnees de la requete
+  var data = response.getDataTable();
+  // Generation du tableau de donnees et des colonnes dediees
+  handleQueryTable(data, "R_TERMINEE", 'Demande(s) terminée(s)', 'id_table3', '#num_clos')
+}
+
+
+//******************************************************************************************************
+// Callback appeler par googlecharts sur actions Table
+//******************************************************************************************************
+function myReadyHandler(){
+    $('.dropup').parents().css('overflow', 'visible');
+    $('a[data-url]').click(function(){
+                /******************************************************
+                / Lecture de la donnée data Resume DA associé à la ligne
+                / ***********Sera nécessaire de le déserialiser********
+                /*****************************************************/
+                var html1='';
+                var infoDA = $(this).attr('info-da');
+                if ((infoDA != '') && (infoDA != '#N/A')) {
+                  var reg1= /{(.*?)}|};/g
+                  var t1 = infoDA.split(reg1);
+                  if(t1){ 
+                    for(var j=0;j<t1.length;j++){
+                        if(t1[j]!=''&&t1[j]!=';') 
+                            html1+=info_timeline(t1[j]);
+                    }
+                  }
+                }
+                /******************************************************
+                / Lecture de la donnée data historic associé à la ligne
+                / ***********Sera nécessaire de le déserialiser********
+                /*****************************************************/
+                var html='';
+                var log = $(this).attr('data-url');
+                if ((log != '') && (log != '#N/A')) {
+                  // regex à utiliser {.*?}
+                  var reg= /{(.*?)}|};/g
+                  var t = log.split(reg);
+                
+                  if(t){ 
+                    for(var i=0;i<t.length;i++){
+                        if(t[i]!=''&&t[i]!=';') 
+                            html+=addtimeline(t[i]);
+                    }
+                  }
+                }
+                //$('#historicalModal ul').html(html);
+                $('#ul-infoda').html(html1);
+                $('#ul-timeline').html(html);
+                $('#historicalModal').modal();
+              })
+}
+
+$(function(){
+  console.log('ready');
+  google.setOnLoadCallback(drawTableByPanel());
+  $('[data-toggle="tooltip"]').tooltip();
+});
+
+$('#btnrefresh').on('click',function(){
+   // Bloque le btn Refresh pour eviter les boucles de refresh
+   //$("#btnrefresh").attr("disabled", true);
+   google.setOnLoadCallback(drawTableByPanel());
+});
+</script>

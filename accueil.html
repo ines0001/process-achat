@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<meta name="google-site-verification" content="YyJGIV3p5TTgJUC1qaifBbeQNdWCfqz8bdRtwY87EnA" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<!--<link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">-->
+<!-- Custom CSS -->
+<?!=HtmlService.createHtmlOutputFromFile('sb-admin').getContent(); ?>
+<style type="text/css">
+body{ 
+    
+    padding-top: 10px;
+    padding-bottom: 100px;}
+ 
+ .footer {
+  
+  bottom: 0;
+  width: 150%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+.pp9-police{
+  
+   font-weight: bold;
+   font-family: 'Lucida Caligraphy'; font-size:13pt;
+   text-align: center;
+ 
+ }
+ .pp9-border-plein{
+   border-radius: 50%;
+   -moz-border-radius: 50%;
+   -webkit-border-radius: 50%;
+   border: 1px solid white; 
+   color: black;
+   padding: 2px 6px 1px 6px;
+   background: white;
+   margin-right: 1px;
+   
+ }
+ .pp9-border-creux{
+   border-radius: 50%;
+   -moz-border-radius: 50%;
+   -webkit-border-radius: 50%;
+   border: 3px solid white; 
+   
+   padding: 1px 6px 1px 6px;
+   
+   margin-right: 1px;
+   
+ }
+ 
+   @-webkit-keyframes ticker {
+    0% {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+      visibility: visible;
+    }
+    100% {
+      -webkit-transform: translate3d(-100%, 0, 0);
+      transform: translate3d(-100%, 0, 0);
+    }
+  }
+  @keyframes ticker {
+    0% {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+      visibility: visible;
+    }
+    100% {
+      -webkit-transform: translate3d(-100%, 0, 0);
+      transform: translate3d(-100%, 0, 0);
+    }
+  }
+  .ticker-wrap {
+    
+    width: 100%;
+    overflow: hidden;
+    height: 4rem;
+    
+    padding-left: 100%;
+  
+    
+  }
+  
+  .ticker {
+    display: inline-block;
+    height: 4rem;
+    line-height: 4rem;
+    white-space: nowrap;
+    padding-right: 100% ; 
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    animation-timing-function: linear;
+    -webkit-animation-name: ticker;
+    animation-name: ticker;
+    -webkit-animation-duration: 40s;
+    animation-duration: 40s;
+  }
+  .ticker__item {
+    display: inline-block;
+    padding: 0 2rem;
+    font-size: 2rem;
+    color: black;
+  }
+  
+  .ticker__item:after {
+    content:"  >>>";
+  }
+  
+   .text_link{
+     position: absolute;
+     padding: 30px 30px 30px 20px;
+     color: black;
+   } 
+
+</style>
+<body>
+<?!=HtmlService.createHtmlOutputFromFile('contact').getContent(); ?>
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="" href="<?=ScriptApp.getService().getUrl()?>">
+        <img alt="Brand" src="http://www.sqli-enterprise.com/files/2014/05/logo_sqli_entreprise_340x156_bg_transp1.png" height="50">
+      </a>
+    </div>
+    <p class="navbar-text"><?=Session.getActiveUser().getEmail()?></p>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
+      <span class="navbar-brand navbar-nav navbar-right"></span>
+    </div><!-- /.navbar-collapse -->
+  </div>
+</div>
+  <div class="container"> 
+     <div class="row">
+      <div class="col-lg-12 text-center">
+        <h1>Process'Achat</h1>
+        <p class="lead">Une application destinée à collecter toutes vos demandes d'achat / bons de commande et cela très simplement.
+        Une gestion intelligente des notifications par mail ainsi qu'un suivi du workflow.<br>
+        </p>
+      </div>
+    </div>
+    <hr class="half-rule">
+    <div class="row">
+      <div class="col-md-offset-2 col-md-9">
+         <a href="<?=ScriptApp.getService().getUrl() + '?page=new' ?>" target="_blank">
+          <div style="background-color: lightgrey; ">
+            <!--<img src="https://docs.google.com/a/sqli.com/drawings/d/10xWRy6Mq5Id4HjPOUZvIEC2HLenAk_3LC0MhMEqohPE/pub?w=250&amp;h=250">-->
+            <span class="glyphicon glyphicon-list-alt" style="font-size:10em" aria-hidden="true"></span>
+            <span class="text_link">
+              <h1><b>Générer une demande d'achat</b></h1>
+              Pour cela rien de plus simple. <br/>Votre demande d'achat s'intégrera ainsi automatiquement dans le workflow de suivi.
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>  
+    <br/>
+    <div class="row">
+     <div class="col-md-offset-2 col-md-9">
+         <a href="<?=ScriptApp.getService().getUrl() + '?page=dashboard' ?>" target="_blank">
+          <div style="background-color: lightgrey;" >
+            <!--<img src="https://docs.google.com/a/sqli.com/drawings/d/1If_zibpur-he9XI-YaEh428KgRW9ELjkOaQpkZZxNA0/pub?w=250&amp;h=250">-->
+            <span class="glyphicon glyphicon-inbox" style="font-size:10em" aria-hidden="true"></span>
+            <span class="text_link text-rigth">
+              <h1><b>Consulter vos dossiers</b></h1>
+              Destiné aux commerciaux, managers, assistantes et directeurs de projet, vous accéderez facilement à tous vos dossiers.
+            </span>
+          </div>
+        </a>
+     </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-md-offset-2 col-md-9">
+         <a href="<?=ScriptApp.getService().getUrl() + '?page=fournisseur' ?>" target="_blank">
+          <div style="background-color: lightgrey; ">
+            <!--<img src="https://docs.google.com/a/sqli.com/drawings/d/1uXQAD-0mpy1D3JY7NGTDLdp2IVPVsL7MxKsSB_BfAw4/pub?w=250&amp;h=250">-->
+            <span class="glyphicon glyphicon-lock" style="font-size:10em" aria-hidden="true"></span>
+            <span class="text_link">
+              <h1><b>Déclarer un nouveau fournisseur</b></h1>
+              Votre fournisseur n'existe pas dans la liste des fournisseurs référencés. Vous renseignez le formulaire, transmettez les documents et votre demande sera transmise aux interlocuteurs concernés.
+            </span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div> 
+</body>
+<!-- Latest compiled and minified JavaScript -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<?!= HtmlService.createTemplateFromFile('footer').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<script>
+// PARTIE JQUERY
+$(function(){
+console.log('Acceuil Ready!');
+
+$('.ticker').css('padding-right',$('.ticker-wrap').parent().width())
+
+google.script.run.withSuccessHandler(function(values){
+                    var out='';
+                    $.each(values,function(index,value){out+='<div class="ticker__item">'+value+'</div>'})
+                    $('.ticker').append(out)
+                  })
+                  .withFailureHandler(function(e){
+                    console.log('Exception'+e.message);     
+                  })
+                  .enumParams('Informations accueil');
+
+});
+
+</script>

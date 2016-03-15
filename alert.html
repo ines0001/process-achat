@@ -1,0 +1,45 @@
+<style type="text/css">
+img.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto }
+    
+</style>
+    
+    
+
+<div id="welldone" class="alert alert-success" style="display:none">
+  <div class="container">
+    <h1>Merci</h1>
+    <p> Votre demande a bien été enregistrée sous la référence <b id="identifier"></b></p>
+    <p> Un mail sera très prochainement envoyé à <u id="managerBU"></u> (Manager de la BU <span id="buimputation"></span>)</p>
+    <p>A très bientôt,</p>
+  </div>
+</div>
+
+
+<div id="wait" class="modal fade" style="display:none">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-body">
+        <p>Traitement en cours . . .</p>
+        <img class="center" src='http://preloaders.net/preloaders/496/Flip%20Flop.gif'>
+      </div>
+      
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="alert" class="modal fade" style="display:none">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-body alert alert-warning" role="alert">
+        <p id="error"></p>
+        
+      </div>
+      
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

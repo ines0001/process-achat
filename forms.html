@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<meta name="google-site-verification" content="YyJGIV3p5TTgJUC1qaifBbeQNdWCfqz8bdRtwY87EnA" />
+<!--?!= include('bootstrap_block'); ?-->
+<!-- Appel de l'api google drive -->
+<script type="text/javascript" src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/css/datepicker3.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+
+
+<style type="text/css">
+
+ body{ 
+    
+    padding-top: 70px;
+    padding-bottom: 70px;}
+ 
+ .footer {
+  
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+ 
+
+</style>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="" href="<?=ScriptApp.getService().getUrl()?>">
+        <img alt="Brand" src="http://www.sqli-enterprise.com/files/2014/05/logo_sqli_entreprise_340x156_bg_transp1.png" height="50">
+      </a>
+    </div>
+    <p class="navbar-text"><?=Session.getActiveUser().getEmail()?></p>
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
+      <span class="navbar-brand navbar-nav navbar-right">Formulaire de création d'une demande d'achat : <b>DEMANDE </b></span>
+    </div><!-- /.navbar-collapse -->
+  </div>
+</div>
+
+
+<div class="container">
+
+  <?!=HtmlService.createHtmlOutputFromFile('alert').getContent(); ?>
+  <?!=HtmlService.createHtmlOutputFromFile('confirmation').getContent(); ?>
+  
+  <div class="row ">
+   <div class="col-md-offset-1 col-md-10">
+     
+     <?!=HtmlService.createHtmlOutputFromFile('form_page1').getContent(); ?>
+     
+     <?!=HtmlService.createHtmlOutputFromFile('form_page2').getContent(); ?>
+   
+     <?!=HtmlService.createHtmlOutputFromFile('contact').getContent(); ?>
+     
+     
+   </div>
+   
+   
+  </div>
+  
+</div>
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/bootstrap-datepicker.min.js"></script>
+<script  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.1/js/locales/bootstrap-datepicker.fr.js"></script>
+<?!= HtmlService.createTemplateFromFile('footer').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<?!= HtmlService.createTemplateFromFile('uploadDocument').evaluate().setSandboxMode(HtmlService.SandboxMode.IFRAME).getContent(); ?>
+<!--?!= include('bootstrap-filestyle'); ?-->
+<!--?!= include('jvalidate'); ?-->
+
+<script>
+// PARTIE JQUERY
+$(function(){
+console.log('Ready!');
+
+$('#form_page1 .bootstrap-filestyle').on('click',function(){
+  google.script.run.withSuccessHandler(createPicker)
+      .withFailureHandler(function(e){console.log(e);}).getOAuthToken();
+});
+
+// Parametrage du datepicket Date de debut de livraison
+$('#form_page1 #datedebutlivraison').datepicker({
+    language: "fr",
+    format: 'dd/mm/yyyy'
+});
+
+// Parametrage du datepicket Date de fin de livraison
+$('#form_page1 #datefinlivraison').datepicker({
+    language: "fr",
+    format: 'dd/mm/yyyy'
+});
+
+google.script.run
+       .withSuccessHandler(function(ret){if(ret) $('.navbar span[class="navbar-brand navbar-nav navbar-right"]').append('<span class="glyphicon glyphicon-wrench" style="color:red" aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="Etat: HORS PRODUCTION"></span>');})
+       .IsIntegration();
+
+$('[data-toggle="tooltip"]').tooltip();
+    
+// Ajout de la classe has-error pour les donnees required du fournilaire
+$('input[required],textarea[required],select[required]').each(function(index) {  
+    $(this).parent().addClass('has-error');
+})
+     
+// Alimentation LD Type de demande
+google.script.run
+       .withSuccessHandler(function(html){$('select#typedemande').html(html);$('select#typedemande').prop( "selectedIndex", -1);})
+       .withFailureHandler(function(message){$("#typedemande").html(message);})
+       .getHtml_TypeDeDemande();     
+
+// Alimentation LD BU Imputation
+google.script.run
+       .withSuccessHandler(function(html){$('select#buimputation').html(html);$('select#buimputation').prop( "selectedIndex", -1);})
+       .withFailureHandler(function(message){$("#buimputation").html(message);})
+       .getHtml_BUImputation();     
+
+// Alimentation LD Fournisseur
+google.script.run
+       .withSuccessHandler(function(html){$('select#fournisseur').html(html);$('select#fournisseur').prop( "selectedIndex", -1);})
+       .withFailureHandler(function(message){$("#fournisseur").html(message);})
+       .getHtml_Fournisseur();
+
+// Alimentation du lien Fiche (de creation) d'un fournisseur
+google.script.run
+       .withSuccessHandler(function(html){$('a#lienfichefournisseur').attr("href", html);})
+       .withFailureHandler(function(message){$("#fournisseur").val(message);})
+       .getFonctionFicheFournisseur();
+       //.getFicheFournisseurLink();
+
+// Alimentation LD Interlocuteur fournisseur en fonction de la donnee Fournisseur selectionnee
+$('select#fournisseur').on('load change', function (e) {
+    google.script.run
+       .withSuccessHandler(function(html){$('select#interlocuteurfournisseur').html(html);$('select#interlocuteurfournisseur').prop( "selectedIndex", -1);})
+       .withFailureHandler(function(message){$("#interlocuteurfournisseur").html(message);})
+       .getHtml_InterlocuteurFromFournisseur(this.value);
+    
+});
+
+$('#form_page1 div.form-group').each(function(index) {      
+      $(this).removeClass('form-group');
+});
+      
+// Parametrage de l'ecran de creation d'une demande en fonction du type de demande
+$('select#typedemande').on('load change', function (e) {
+  switch($(this).find('option:selected').attr("id")){
+    case 'INT' : // Demande d'achat Interne
+                     // Masquer la zone Quantite et passer la valeur a 1
+                     $("#zonequantite").hide();
+                     $("#quantite").val("1");
+                     // Renommer le libelle Prix/TJM Achat
+                     $("#lblprixtjmachat").html("*Prix achat:");
+                     // Masquer la zone Prix/TJM Vendu
+                     $("#zoneprixtjmvendu").hide();
+                     $("#prixtjmvendu").prop('required',false);
+                     // Renommer le libelle Date de debut de livraison
+                     $("#lbldatedebutlivraison").html("*Date de livraison:");
+                     // Masquer la zone Date de fin de livraison
+                     $("#zonedatefinlivraison").hide();
+                     $("#datefinlivraison").prop('required',false);
+                     
+                     //Roolback des modifs des autres types de demande
+                     $("#lblcodeprojet").html("Code projet:");
+                     $("#codeprojet").prop('required',false);
+                     $("#codeprojet").parent().removeClass('has-error');
+                     $("#zonecollab").hide();
+                     $("#collab").prop('required',false);
+                     break;
+    case 'ACH-RVT' :
+    case 'SST-FOR' : // Demande d'achat Achat / Revente
+                     // Masquer la zone Quantite et passer la valeur a 1
+                     $("#zonequantite").hide();
+                     $("#quantite").val("1");
+                     // Renommer le libelle Prix/TJM Achat
+                     $("#lblprixtjmachat").html("*Prix achat:");
+                     // Renommer le libelle Prix/TJM Vendu
+                     $("#zoneprixtjmvendu").show();
+                     $("#lblprixtjmvendu").html("*Prix vente:");
+                     // Renommer le libelle Date de debut de livraison
+                     $("#lbldatedebutlivraison").html("*Date de livraison:");
+                     // Masquer la zone Date de fin de livraison
+                     $("#zonedatefinlivraison").hide();
+                     $("#datefinlivraison").prop('required',false);
+                     // Donnee obligatoire : Code Projet
+                     $("#lblcodeprojet").html("*Code projet:");
+                     $("#codeprojet").prop('required',true);
+                     $("#codeprojet").parent().addClass('has-error');
+                     //Roolback des modifs des autres types de demande
+                     $("#zonecollab").hide();
+                     $("#collab").prop('required',false);
+                     break;
+    case 'SST-REG' : // Renommer le libelle Prix/TJM Achat
+                     $("#lblprixtjmachat").html("*TJM achat:");
+                     // Donnee obligatoire : Code Projet
+                     $("#lblcodeprojet").html("*Code projet:");
+                     $("#codeprojet").prop('required',true);
+                     $("#codeprojet").parent().addClass('has-error');
+                     // Renommer le libelle Prix/TJM Vendu
+                     $("#zoneprixtjmvendu").show();
+                     $("#lblprixtjmvendu").html("*TJM vente:");
+                     // Activer Identite du collaborateur
+                     $("#zonecollab").show();
+                     $("#collab").prop('required',true);
+                     //Roolback des modifs des autres types de demande
+                     $("#quantite").val("");
+                     $("#zonequantite").show();
+                     $("#lbldatedebutlivraison").html("*Date de début de livraison:");
+                     $("#zonedatedebutlivraison").show();
+                     $("#zonedatefinlivraison").show();
+                     $("#datefinlivraison").prop('required',true);
+                     $("#datefinlivraison").parent().addClass('has-error');
+                     break;
+    default : break;
+  }
+});
+
+// Validation de la valeur de la donnée Quantite
+$('input#quantite').on('load change', function (e) {
+  if (this.value != "") {
+   if (this.value < 1) {
+     $('#wait').modal('hide');
+     $('#alert #error').html("La valeur de la donnée Quantité doit être supérieure à 0.");
+     $('#alert').modal('show');
+     $('input#quantite').val("");
+   }
+ } 
+ });
+
+// Validation des donnees Prix unitaire/TJM Achat et Prix unitaire/TJM Vendu
+$('input#prixtjmachat').on('load change', function (e) {
+var valPrixTJMVendu = $('input#prixtjmvendu').val();
+
+  if (this.value != "") {
+    if((!isNaN(parseFloat(valPrixTJMVendu)) && isFinite(valPrixTJMVendu)) && (!isNaN(parseFloat(this.value)) && isFinite(this.value))) {
+      if (Number(this.value) > Number(valPrixTJMVendu)) {
+        $('#wait').modal('hide');
+        $('#alert #error').html("La valeur de la donnée Prix unitaire/TJM Vendu doit être supérieure à la valeur de la donnée Prix unitaire/TJM Achat.");
+        $('#alert').modal('show');
+        $('input#prixtjmachat').val("");
+        $('input#prixtjmvendu').val("");
+      }
+    }
+  } 
+ });
+$('input#prixtjmvendu').on('load change', function (e) {
+var valPrixTJMAchat = $('input#prixtjmachat').val();
+
+  if (this.value != "") {
+    if((!isNaN(parseFloat(valPrixTJMAchat)) && isFinite(valPrixTJMAchat)) && (!isNaN(parseFloat(this.value)) && isFinite(this.value))) {
+      if (Number(this.value) < Number(valPrixTJMAchat)) {
+        $('#wait').modal('hide');
+        $('#alert #error').html("La valeur de la donnée Prix unitaire/TJM Vendu doit être supérieure à la valeur de la donnée Prix unitaire/TJM Achat.");
+        $('#alert').modal('show');
+        $('input#prixtjmachat').val("");
+        $('input#prixtjmvendu').val("");
+      }
+    }
+  } 
+ });
+
+// Fonction de conversion de String vers Date
+function dateToString(dateString) {
+  var dateArray = dateString.split("/");
+  var year = dateArray[2];
+  var month = dateArray[1];
+  var day = dateArray[0];
+  var date = new Date(year, month - 1, day);
+  return date;
+}
+
+// Validation des donnees Date de debut et de fin de livraison
+$('input#datedebutlivraison').on('load change', function (e) {
+var valDateFinLivraison = $('input#datefinlivraison').val();
+
+  if (this.value != "") {
+    if (dateToString(this.value) > dateToString(valDateFinLivraison)) {
+      $('#wait').modal('hide');
+      $('#alert #error').html("La valeur de la donnée Date de fin de livraison doit être postérieure à la Date de début de livraison");
+      $('#alert').modal('show');
+      $('input#datedebutlivraison').val("");
+      $('input#datefinlivraison').val("");
+    }
+  } 
+ });
+
+$('input#datefinlivraison').on('load change', function (e) {
+var valDateDebutLivraison = $('input#datedebutlivraison').val();
+
+  if (this.value != "") {
+    if (dateToString(this.value) < dateToString(valDateDebutLivraison)) {
+      $('#wait').modal('hide');
+      $('#alert #error').html("La valeur de la donnée Date de fin de livraison doit être postérieure à la Date de début de livraison");
+      $('#alert').modal('show');
+      $('input#datedebutlivraison').val("");
+      $('input#datefinlivraison').val("");
+    }
+  } 
+ });
+ 
+/** CREATION DE LA DEMANDE & ENVOI DE L'EMAIL ***/
+ /** directement depuis le bouton sbumit du formulaire  */
+ $("#form_page1").on('submit',function(){
+    var blnOK = true;
+    var msg = '';
+    // Controle des donnees obligatoire (celles non realise avant l'appel de la fonction Valider)
+    if ($('#drive_id_files').val() == '') {
+      // Pas de devis telecharge
+      msg += "Le document correspondant au devis n'a pas été intégré à la demande d'achat.<BR>";
+      blnOK = false;
+    } 
+    if (($('#interlocuteurfournisseur').val() == '') || ($('#interlocuteurfournisseur').val() == null)) {
+      // Contact fournisseur non selectionne, nom & email saisie obligatoirement
+      if (($('#nomcontactfournisseur').val() == '') || ($('#emailcontactfournisseur').val() == '')) {
+        msg += "Vous devez : <BR>- soit sélectionner un contact dans la liste des Interlocuteurs fournisseur connus<BR>- soit saisir le Nom (Obligatoire), Email(Obligatoire) et N° de téléphone (Facultatif) du contact.<BR>";
+        blnOK = false;
+      }
+    }
+    if ($('#emailcontactfournisseur').val() != '') {
+      // Format de l'email du contact fournisseur
+      var regEmailContact = new RegExp('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$');
+      if (regEmailContact.test($('#emailcontactfournisseur').val()) == false) {
+        msg += "L'adresse email du contact fournisseur n'est pas valide.<BR>";
+        blnOK = false;
+      }
+    }
+    if ($('#telcontactfournisseur').val() != '') {
+      // Format du tel du contact fournisseur
+      var regTelContact = new RegExp('[0-9-()+]{3,20}');
+      if (regTelContact.test($('#telcontactfournisseur').val()) == false) {
+        msg += "Le n° de téléphone du contact fournisseur n'est pas valide.<BR>";
+        blnOK = false;
+      }
+    }
+    if (blnOK == false) {
+        $('#wait').modal('hide');
+        $('#alert #error').html(msg);
+        $('#alert').modal('show');
+    } else 
+    {
+      if ($("#codeprojet").val() != '') {
+        // Message de confirmation par le demandeur que le code projet est valide
+        doConfirm("Validez-vous le code projet ["+$("#codeprojet").val()+"] associé à votre demande d'achat ?", function yes() {
+          // On génère l'ensemble des attributs name aux éléments
+          $('#form_page1 input, #form_page1 textarea, #form_page1 select').each(function(index){
+           $(this).attr("name",$(this).attr("id"));
+          });
+          // Message En attente
+          $('#wait').modal({
+            keyboard: false,
+            backdrop: false
+          });
+          // Collecte des données
+          google.script.run
+             .withSuccessHandler(function(values){$('#welldone #identifier').html(values.id);
+                                            $('#welldone #managerBU').html(values.managerBU);
+                                            $('#welldone #buimputation').html(values.buimputation);
+                                            $('#wait').modal('hide');
+                                            $('#form_page1').hide();$('#welldone').show();
+                                       })
+             .withFailureHandler(function(e){$('#wait').modal('hide');
+                                           $('#alert #error').html(e);
+                                           $('#alert').modal('show');
+                                           console.log(e);})
+             .save_form( $("#form_page1").serializeArray(),
+                         $("#form_page1 #mail").val(),
+                         $("#form_page1 #drive_id_files").val());
+          }, function no() {
+            // do nothing
+        });
+       } else {
+        // On génère l'ensemble des attributs name aux éléments
+        $('#form_page1 input, #form_page1 textarea, #form_page1 select').each(function(index){
+         $(this).attr("name",$(this).attr("id"));
+        });
+        // Message En attente
+        $('#wait').modal({
+          keyboard: false,
+          backdrop: false
+        });
+        // Collecte des données
+        google.script.run
+           .withSuccessHandler(function(values){$('#welldone #identifier').html(values.id);
+                                        $('#welldone #managerBU').html(values.managerBU);
+                                        $('#welldone #buimputation').html(values.buimputation);
+                                        $('#wait').modal('hide');
+                                        $('#form_page1').hide();$('#welldone').show();
+                                       })
+           .withFailureHandler(function(e){$('#wait').modal('hide');
+                                         $('#alert #error').html(e);
+                                         $('#alert').modal('show');
+                                       console.log(e);})
+           .save_form( $("#form_page1").serializeArray(),
+                       $("#form_page1 #mail").val(),
+                       $("#form_page1 #drive_id_files").val());
+       }
+    }
+    return false;
+ });
+});
+// PARTIE JAVASCRIPT
+function afficheSaisieContact() {
+  $('#sectioncf').show();
+  $('#sectionce').show();
+  $('#sectionct').show();
+}
+function closeSubmit(ret){console.log(ret);}
+function showError(){return true;}
+</script>
+
